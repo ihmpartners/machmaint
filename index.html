@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html lang="en-GB" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1D2E36">
+<title>Fleet Maintenance — vehicles &amp; machinery</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%231D2E36'/%3E%3Ctext x='32' y='45' font-family='system-ui' font-size='34' font-weight='700' text-anchor='middle' fill='%23E9B21A'%3EM%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --paper:#E6EAE3; --panel:#FBFCF9; --panel-2:#F1F4EE; --ink:#12242C; --ink-2:#4C5F65;
+  --rule:#C2CBC2; --rule-2:#DDE3DA; --plate:#1D2E36; --plate-ink:#F2F5EF;
+  --red:#AE2F27; --red-bg:#F7E3E1; --amber:#A96C05; --amber-bg:#FAECD5;
+  --green:#256B4A; --green-bg:#DFEDE2; --blue:#2A557E; --blue-bg:#E1EAF3;
+  --grey:#5F6F6B; --grey-bg:#E9EDE8;
+  --focus:#E9B21A;
+  --r:4px; --rr:8px;
+  --f: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --m: ui-monospace, "SFMono-Regular", "Cascadia Mono", Menlo, Consolas, monospace;
+  --shadow: 0 1px 0 var(--rule-2), 0 2px 10px rgba(18,36,44,.06);
+}
+[data-theme="dark"]{
+  --paper:#101A1F; --panel:#17242A; --panel-2:#1D2C33; --ink:#E7EDE8; --ink-2:#9DAFB2;
+  --rule:#2E4149; --rule-2:#243239; --plate:#0B1418; --plate-ink:#EDF2EA;
+  --red:#F08A80; --red-bg:#3A1F1D; --amber:#EFC069; --amber-bg:#3A2E15;
+  --green:#7CC59C; --green-bg:#153027; --blue:#8FBBE2; --blue-bg:#152634;
+  --grey:#A8B6B2; --grey-bg:#1E2C31;
+  --shadow: 0 1px 0 rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--ink); font-family:var(--f);
+  font-size:16px; line-height:1.45; -webkit-text-size-adjust:100%;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus); outline-offset:2px}
+a{color:var(--blue)}
+h1,h2,h3{margin:0;line-height:1.2;letter-spacing:-.012em}
+h1{font-size:1.35rem;font-weight:700}
+h2{font-size:1.12rem;font-weight:700}
+h3{font-size:.98rem;font-weight:700}
+p{margin:.4em 0}
+.mono{font-family:var(--m);font-variant-numeric:tabular-nums}
+.muted{color:var(--ink-2)}
+.small{font-size:.82rem}
+.hide{display:none !important}
+.nowrap{white-space:nowrap}
+
+/* ---------- shell ---------- */
+.app{display:grid;grid-template-columns:1fr;min-height:100vh}
+.rail{display:none}
+.main{min-width:0;padding:0 0 84px}
+.topbar{
+  position:sticky;top:0;z-index:40;background:var(--plate);color:var(--plate-ink);
+  display:flex;align-items:center;gap:10px;padding:10px 12px;
+  padding-top:calc(10px + env(safe-area-inset-top));
+  border-bottom:3px solid var(--focus);
+}
+.topbar .mark{
+  width:34px;height:34px;border-radius:6px;background:var(--focus);color:#1D2E36;
+  display:grid;place-items:center;font-weight:800;font-size:1.05rem;flex:none;
+}
+.topbar h1{font-size:1.02rem;font-weight:700;letter-spacing:0}
+.topbar .sub{font-size:.72rem;color:#A9BCC0;letter-spacing:.02em}
+.topbar .spacer{flex:1}
+.iconbtn{
+  background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);color:inherit;
+  border-radius:8px;min-width:40px;height:40px;padding:0 10px;cursor:pointer;font-size:.82rem;font-weight:600;
+}
+.iconbtn:active{transform:translateY(1px)}
+.wrap{padding:14px 12px;max-width:1180px;margin:0 auto}
+
+/* ---------- bottom nav (mobile) ---------- */
+.tabbar{
+  position:fixed;left:0;right:0;bottom:0;z-index:50;display:grid;grid-template-columns:repeat(5,1fr);
+  background:var(--panel);border-top:1px solid var(--rule);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.tabbar button{
+  background:none;border:0;padding:9px 2px 10px;cursor:pointer;color:var(--ink-2);
+  font-size:.68rem;font-weight:600;display:grid;gap:3px;justify-items:center;border-top:3px solid transparent;
+}
+.tabbar button svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tabbar button[aria-current="true"]{color:var(--ink);border-top-color:var(--focus)}
+.sheet{
+  position:fixed;inset:auto 0 0 0;z-index:60;background:var(--panel);border-top:1px solid var(--rule);
+  border-radius:14px 14px 0 0;padding:8px 8px calc(14px + env(safe-area-inset-bottom));box-shadow:0 -8px 30px rgba(0,0,0,.18)
+}
+.sheet button{display:flex;width:100%;gap:10px;align-items:center;background:none;border:0;border-bottom:1px solid var(--rule-2);padding:13px 10px;text-align:left;font-weight:600;cursor:pointer}
+.sheet button:last-child{border-bottom:0}
+.scrim{position:fixed;inset:0;background:rgba(10,20,24,.45);z-index:55}
+
+/* ---------- panels & tables ---------- */
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:var(--rr);box-shadow:var(--shadow);margin:0 0 14px}
+.panel > header{display:flex;align-items:baseline;gap:10px;padding:11px 13px;border-bottom:1px solid var(--rule-2);flex-wrap:wrap}
+.panel > header .spacer{flex:1}
+.panel .body{padding:13px}
+.panel .body.flush{padding:0}
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--rule-2);vertical-align:top}
+th{font-size:.76rem;font-weight:700;color:var(--ink-2);background:var(--panel-2);position:sticky;top:0;z-index:1;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+tbody tr.clickable{cursor:pointer}
+tbody tr.clickable:hover{background:var(--panel-2)}
+td ul{margin:0;padding-left:16px}
+td ul li{margin:1px 0}
+
+/* ---------- asset plate (signature) ---------- */
+.plate{
+  display:inline-grid;place-items:center;flex:none;
+  background:var(--plate);color:var(--plate-ink);font-family:var(--m);font-weight:700;
+  width:38px;height:30px;border-radius:3px;font-size:1rem;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.22), inset 0 0 0 3px var(--plate);
+  letter-spacing:.02em;
+}
+.plate.lg{width:56px;height:44px;font-size:1.4rem;border-radius:4px}
+.plate.sm{width:30px;height:24px;font-size:.82rem}
+.assetline{display:flex;gap:10px;align-items:center;min-width:0}
+.assetline .nm{font-weight:650;min-width:0}
+.assetline .ty{font-size:.76rem;color:var(--ink-2)}
+
+/* ---------- chips ---------- */
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:.72rem;font-weight:700;padding:3px 8px;border-radius:999px;white-space:nowrap;border:1px solid transparent}
+.chip.red{background:var(--red-bg);color:var(--red);border-color:var(--red)}
+.chip.amber{background:var(--amber-bg);color:var(--amber);border-color:var(--amber)}
+.chip.green{background:var(--green-bg);color:var(--green);border-color:var(--green)}
+.chip.blue{background:var(--blue-bg);color:var(--blue);border-color:var(--blue)}
+.chip.grey{background:var(--grey-bg);color:var(--grey);border-color:var(--rule)}
+.chip.plain{background:var(--panel-2);color:var(--ink-2);border-color:var(--rule-2)}
+
+/* ---------- buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  background:var(--panel);border:1px solid var(--rule);border-radius:var(--r);
+  padding:9px 13px;font-size:.88rem;font-weight:650;cursor:pointer;min-height:42px;
+}
+.btn:hover{background:var(--panel-2)}
+.btn.primary{background:var(--plate);color:var(--plate-ink);border-color:var(--plate)}
+.btn.primary:hover{filter:brightness(1.15)}
+.btn.go{background:var(--focus);color:#1D2E36;border-color:#B98C10}
+.btn.danger{color:var(--red);border-color:var(--red)}
+.btn.sm{min-height:34px;padding:5px 10px;font-size:.8rem}
+.btn.block{width:100%}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ---------- forms ---------- */
+label.f{display:block;margin:0 0 11px}
+label.f > span{display:block;font-size:.78rem;font-weight:650;color:var(--ink-2);margin-bottom:4px}
+input[type=text],input[type=number],input[type=date],input[type=password],select,textarea{
+  width:100%;background:var(--panel);border:1px solid var(--rule);border-radius:var(--r);
+  padding:10px;min-height:44px
+}
+textarea{min-height:76px;resize:vertical}
+.grid2{display:grid;gap:0 12px;grid-template-columns:1fr}
+.checkline{display:flex;gap:9px;align-items:center;margin:0 0 9px}
+.checkline input{width:22px;height:22px;flex:none}
+
+/* ---------- KPI ---------- */
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:0 0 14px}
+.kpi{background:var(--panel);border:1px solid var(--rule);border-left:5px solid var(--rule);border-radius:var(--rr);padding:11px 12px;cursor:pointer;text-align:left}
+.kpi .n{font-family:var(--m);font-size:1.9rem;font-weight:700;line-height:1}
+.kpi .l{font-size:.78rem;color:var(--ink-2);font-weight:600;margin-top:3px}
+.kpi.red{border-left-color:var(--red)} .kpi.red .n{color:var(--red)}
+.kpi.amber{border-left-color:var(--amber)} .kpi.amber .n{color:var(--amber)}
+.kpi.green{border-left-color:var(--green)} .kpi.green .n{color:var(--green)}
+.kpi.blue{border-left-color:var(--blue)} .kpi.blue .n{color:var(--blue)}
+
+/* ---------- season band ---------- */
+.season{display:grid;grid-template-columns:repeat(12,1fr);gap:2px;margin-top:4px}
+.season .mo{padding:6px 2px 7px;text-align:center;border-radius:3px;background:var(--panel-2);border:1px solid var(--rule-2)}
+.season .mo b{display:block;font-size:.7rem;font-weight:700}
+.season .mo i{display:block;height:5px;border-radius:2px;margin-top:5px;background:var(--rule)}
+.season .mo.blackout{background:var(--red-bg);border-color:var(--red)}
+.season .mo.blackout i{background:var(--red)}
+.season .mo.leave{background:var(--grey-bg)}
+.season .mo.leave i{background:var(--grey);opacity:.6}
+.season .mo.window{background:var(--green-bg);border-color:var(--green)}
+.season .mo.window i{background:var(--green)}
+.season .mo.now{outline:3px solid var(--focus);outline-offset:1px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:9px;font-size:.76rem;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+/* ---------- banner ---------- */
+.banner{display:flex;gap:11px;align-items:flex-start;padding:11px 13px;border-radius:var(--rr);border:1px solid;margin:0 0 12px;font-size:.9rem}
+.banner.red{background:var(--red-bg);border-color:var(--red);color:var(--red)}
+.banner.amber{background:var(--amber-bg);border-color:var(--amber);color:var(--amber)}
+.banner.blue{background:var(--blue-bg);border-color:var(--blue);color:var(--blue)}
+.banner b{color:inherit}
+
+/* ---------- DI checklist ---------- */
+.di-item{border:1px solid var(--rule);border-radius:var(--rr);padding:10px 11px;margin:0 0 9px;background:var(--panel)}
+.di-item.def{border-color:var(--red);background:var(--red-bg)}
+.di-item.na{opacity:.62}
+.di-item .q{font-weight:650;margin-bottom:8px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.seg button{border:1px solid var(--rule);background:var(--panel);border-radius:var(--r);padding:11px 4px;font-weight:700;font-size:.85rem;cursor:pointer;min-height:46px}
+.seg button[aria-pressed="true"][data-v="ok"]{background:var(--green);border-color:var(--green);color:#fff}
+.seg button[aria-pressed="true"][data-v="def"]{background:var(--red);border-color:var(--red);color:#fff}
+.seg button[aria-pressed="true"][data-v="na"]{background:var(--grey);border-color:var(--grey);color:#fff}
+
+/* ---------- picker grid ---------- */
+.pickgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px}
+.pick{display:flex;gap:9px;align-items:center;text-align:left;background:var(--panel);border:1px solid var(--rule);border-radius:var(--rr);padding:10px;cursor:pointer;min-height:60px}
+.pick:hover{background:var(--panel-2)}
+.pick.us{border-color:var(--red);background:var(--red-bg)}
+.pick .nm{font-weight:650;font-size:.88rem;line-height:1.2}
+.pick .ty{font-size:.72rem;color:var(--ink-2)}
+
+/* ---------- modal ---------- */
+.modal{position:fixed;inset:0;z-index:70;display:grid;place-items:end center;background:rgba(10,20,24,.5)}
+.modal .card{background:var(--panel);width:100%;max-width:760px;max-height:92vh;overflow:auto;border-radius:14px 14px 0 0;border:1px solid var(--rule)}
+.modal .card > header{position:sticky;top:0;background:var(--panel);border-bottom:1px solid var(--rule);padding:12px 13px;display:flex;gap:10px;align-items:center;z-index:2}
+.modal .card > header .spacer{flex:1}
+.modal .card > .body{padding:13px}
+.modal .card > footer{position:sticky;bottom:0;background:var(--panel);border-top:1px solid var(--rule);padding:11px 13px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+
+/* ---------- misc ---------- */
+.desk-head{display:none}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 12px}
+.filters select,.filters input{width:auto;min-width:130px;flex:1 1 130px}
+.empty{padding:26px 14px;text-align:center;color:var(--ink-2)}
+.empty b{display:block;font-size:1rem;color:var(--ink);margin-bottom:4px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:88px;z-index:90;background:var(--plate);color:var(--plate-ink);padding:11px 16px;border-radius:999px;font-size:.86rem;font-weight:600;box-shadow:0 6px 24px rgba(0,0,0,.3);max-width:92vw}
+.reqlist{margin:0;padding-left:17px;font-size:.84rem;color:var(--ink-2)}
+details.req summary{cursor:pointer;font-size:.82rem;font-weight:650;color:var(--blue);list-style:none;padding:2px 0}
+details.req summary::-webkit-details-marker{display:none}
+details.req summary::before{content:"▸ ";font-size:.9em}
+details.req[open] summary::before{content:"▾ "}
+details.req .reqlist{margin-top:5px}
+.reqlist li{margin:1px 0}
+.subrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:5px}
+.dot{width:8px;height:8px;border-radius:99px;display:inline-block;background:var(--grey)}
+.dot.on{background:var(--green)} .dot.off{background:var(--red)}
+.repeat{display:grid;gap:8px;grid-template-columns:1fr;border:1px solid var(--rule-2);border-radius:var(--r);padding:10px;margin-bottom:9px;background:var(--panel-2)}
+.hr{height:1px;background:var(--rule-2);margin:14px 0}
+.pillnav{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px}
+.pillnav button{border:1px solid var(--rule);background:var(--panel);border-radius:999px;padding:7px 13px;font-size:.83rem;font-weight:650;white-space:nowrap;cursor:pointer}
+.pillnav button[aria-current="true"]{background:var(--plate);color:var(--plate-ink);border-color:var(--plate)}
+
+@media (min-width:760px){
+  .grid2{grid-template-columns:1fr 1fr}
+  .kpis{grid-template-columns:repeat(4,1fr)}
+  .modal{place-items:center}
+  .modal .card{border-radius:12px}
+}
+@media (min-width:960px){
+  .app{grid-template-columns:238px 1fr}
+  .rail{display:block;background:var(--plate);color:var(--plate-ink);position:sticky;top:0;height:100vh;overflow:auto}
+  .rail .brand{display:flex;gap:10px;align-items:center;padding:16px 14px 14px;border-bottom:1px solid rgba(255,255,255,.12)}
+  .rail .brand .mark{width:38px;height:38px;border-radius:7px;background:var(--focus);color:#1D2E36;display:grid;place-items:center;font-weight:800}
+  .rail nav{padding:8px}
+  .rail nav button{display:flex;width:100%;gap:10px;align-items:center;background:none;border:0;color:#C3D2D4;padding:10px 11px;border-radius:6px;font-weight:600;font-size:.9rem;cursor:pointer;text-align:left}
+  .rail nav button svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+  .rail nav button:hover{background:rgba(255,255,255,.07);color:#fff}
+  .rail nav button[aria-current="true"]{background:var(--focus);color:#1D2E36}
+  .rail .foot{padding:12px 14px;font-size:.74rem;color:#8FA4A8;border-top:1px solid rgba(255,255,255,.12)}
+  .tabbar{display:none}
+  .main{padding-bottom:24px}
+  .topbar{display:none}
+  .wrap{padding:20px}
+  .desk-head{display:flex;align-items:center;gap:12px;margin:0 0 16px;flex-wrap:wrap}
+  .desk-head .spacer{flex:1}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media print{
+  .rail,.tabbar,.topbar,.btnrow,.filters,.pillnav{display:none!important}
+  body{background:#fff}
+  .panel{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="rail">
+    <div class="brand">
+      <div class="mark">M</div>
+      <div>
+        <div style="font-weight:700;font-size:.95rem">Fleet Maintenance</div>
+        <div style="font-size:.72rem;color:#8FA4A8" id="railOrg">Ground equipment</div>
+      </div>
+    </div>
+    <nav id="railNav"></nav>
+    <div class="foot">
+      <div><span class="dot" id="netDot"></span> <span id="netTxt">Checking…</span></div>
+      <div style="margin-top:6px" id="syncTxt">Never synced</div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="mark">M</div>
+      <div>
+        <h1 id="mTitle">Today</h1>
+        <div class="sub" id="mSub">Fleet maintenance</div>
+      </div>
+      <div class="spacer"></div>
+      <button class="iconbtn" id="btnSync" title="Sync now">Sync</button>
+      <button class="iconbtn" id="btnTheme" title="Switch light or dark">◐</button>
+    </header>
+    <div class="wrap" id="view"></div>
+  </div>
+</div>
+
+<nav class="tabbar" id="tabbar"></nav>
+<div id="overlay"></div>
+
+<script>
+/* =====================================================================
+   FLEET MAINTENANCE  —  offline-first tracker for vehicles & machinery
+   Single file. No network needed to run. Optional sync to Cloudflare D1.
+   ===================================================================== */
+(function(){
+"use strict";
+
+/* ------------------------------ utilities ------------------------------ */
+const $  = (s,r)=> (r||document).querySelector(s);
+const $$ = (s,r)=> Array.from((r||document).querySelectorAll(s));
+const uid = ()=> (crypto.randomUUID ? crypto.randomUUID()
+  : 'x'+Date.now().toString(36)+Math.random().toString(36).slice(2,10));
+const now = ()=> Date.now();
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTHS_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function todayISO(d){ d = d||new Date(); return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10); }
+function parseISO(s){ if(!s) return null; const p=String(s).slice(0,10).split('-').map(Number); if(p.length<3||!p[0]) return null; return new Date(p[0],p[1]-1,p[2]); }
+function addMonths(iso,n){ const d=parseISO(iso); if(!d) return null; const day=d.getDate(); d.setDate(1); d.setMonth(d.getMonth()+n);
+  d.setDate(Math.min(day,new Date(d.getFullYear(),d.getMonth()+1,0).getDate())); return todayISO(d); }
+function daysBetween(a,b){ const A=parseISO(a),B=parseISO(b); if(!A||!B) return null; return Math.round((B-A)/864e5); }
+function fmtDate(iso){ const d=parseISO(iso); if(!d) return '—'; return String(d.getDate()).padStart(2,'0')+' '+MONTHS[d.getMonth()]+' '+d.getFullYear(); }
+function fmtDT(ms){ if(!ms) return '—'; const d=new Date(ms); return fmtDate(todayISO(d))+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+function relDays(n){ if(n===null) return ''; if(n===0) return 'today'; if(n<0) return Math.abs(n)+' day'+(Math.abs(n)===1?'':'s')+' overdue';
+  if(n<31) return 'in '+n+' day'+(n===1?'':'s'); const m=Math.round(n/30.4); return 'in '+m+' month'+(m===1?'':'s'); }
+function money(n){ n=Number(n||0); return '£'+n.toFixed(2); }
+function sortBy(arr,fn){ return arr.slice().sort((a,b)=>{ const x=fn(a),y=fn(b); return x<y?-1:x>y?1:0; }); }
+function nextRef(prefix,list,key){ let max=0; list.forEach(r=>{ const m=String(r[key]||'').match(/(\d+)$/); if(m) max=Math.max(max,+m[1]); });
+  return prefix+String(max+1).padStart(4,'0'); }
+
+/* ------------------------------ storage -------------------------------- */
+/* Tries IndexedDB, then localStorage, then the Claude artifact store,
+   then memory. Whole database is one JSON document — it stays small. */
+const Store = (function(){
+  const KEY='fleet-maint-db-v1'; let mode='memory', mem=null, idb=null;
+  function openIDB(){ return new Promise((res,rej)=>{ try{
+      const r=indexedDB.open('fleetmaint',1);
+      r.onupgradeneeded=()=>{ r.result.createObjectStore('kv'); };
+      r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error);
+      setTimeout(()=>rej(new Error('timeout')),2500);
+    }catch(e){ rej(e); } }); }
+  async function init(){
+    try{ idb=await openIDB(); mode='idb'; return; }catch(e){}
+    try{ localStorage.setItem('__t','1'); localStorage.removeItem('__t'); mode='local'; return; }catch(e){}
+    if(window.storage && window.storage.get){ mode='artifact'; return; }
+    mode='memory';
+  }
+  async function load(){
+    try{
+      if(mode==='idb') return await new Promise((res,rej)=>{ const t=idb.transaction('kv','readonly').objectStore('kv').get(KEY);
+        t.onsuccess=()=>res(t.result?JSON.parse(t.result):null); t.onerror=()=>rej(t.error); });
+      if(mode==='local'){ const v=localStorage.getItem(KEY); return v?JSON.parse(v):null; }
+      if(mode==='artifact'){ const r=await window.storage.get(KEY); return r&&r.value?JSON.parse(r.value):null; }
+    }catch(e){ console.warn('load failed',e); }
+    return mem;
+  }
+  async function save(obj){
+    const s=JSON.stringify(obj); mem=obj;
+    try{
+      if(mode==='idb') return await new Promise((res,rej)=>{ const t=idb.transaction('kv','readwrite').objectStore('kv').put(s,KEY);
+        t.onsuccess=()=>res(true); t.onerror=()=>rej(t.error); });
+      if(mode==='local'){ localStorage.setItem(KEY,s); return true; }
+      if(mode==='artifact'){ await window.storage.set(KEY,s); return true; }
+    }catch(e){ console.warn('save failed',e); }
+    return false;
+  }
+  return { init, load, save, get mode(){return mode;} };
+})();
+
+/* --------------------------- seed: the fleet --------------------------- */
+/* Numbers are the club's own asset numbers and are used as the identity. */
+const SEED_ASSETS = [
+ [1 ,'Discovery Towout 1','vehicle','towvehicle',true ],
+ [2 ,'Discovery Towout 2','vehicle','towvehicle',true ],
+ [3 ,'Skylaunch Winch 1','machinery','winch',false],
+ [4 ,'Skylaunch Winch 2','machinery','winch',false],
+ [5 ,'Ferguson Yellow Tractor','vehicle','tractor',false],
+ [6 ,'Ferguson Orange Tractor','vehicle','tractor',false],
+ [7 ,'Ferguson Red Tractor','vehicle','tractor',false],
+ [8 ,'Ferguson Red Field Tractor','vehicle','tractor',false],
+ [9 ,'Siromer Tractor','vehicle','tractor',false],
+ [10,'Field Gang Mower','machinery','mower',false],
+ [11,'Flail Mower','machinery','mower',false],
+ [12,'John Deere Gator','vehicle','utility',false],
+ [13,'Golf Buggy','vehicle','utility',false],
+ [14,'Public Area Mower','machinery','mower',false],
+ [15,'Trailer Park Mower','machinery','mower',false],
+ [16,'Stihl Strimmer','machinery','handheld',false],
+ [17,'Launch Point Bus','vehicle','bus',true ]
+];
+const TYPE_LABEL = { towvehicle:'Tow-out vehicle', winch:'Launch winch', tractor:'Tractor',
+  mower:'Mower', utility:'Utility vehicle', bus:'Bus / minibus', handheld:'Hand-held equipment', other:'Other' };
+
+/* ------------------ seed: scheduled maintenance tasks ------------------ */
+/* class: statutory | inspection | major | check
+   applies: 'all' | 'vehicle' | 'machinery' | ['tractor','mower'] (asset types)
+   window : allowed months (1-12) for the work, [] = any month            */
+const SEED_TASKS = [
+ { id:'annual-inspection', name:'Annual safety inspection', cls:'inspection', applies:'all',
+   every:12, window:[3,4,10,11,12], lead:60,
+   req:['Full mechanical and structural examination','Brakes tested and adjusted','Steering, suspension and wheel bearings',
+        'Lights, beacon and electrics','Guards, covers and PTO shields present and sound','Hydraulic rams, hoses and couplings',
+        'Towing hitch, pins, safety line and lights socket','Seat, seatbelt and ROPS / cab structure','Fire extinguisher present and in date',
+        'Findings recorded and defects raised','Inspection certificate signed and filed'] },
+
+ { id:'winter-major-service', name:'Winter major service', cls:'major', applies:'all',
+   every:12, window:[10,11,12,3,4], lead:60,
+   req:['Engine oil and filter changed','Fuel filter(s) and water trap','Air filter cleaned or renewed',
+        'Coolant strength tested, hoses and clips checked','Belts and tensioners','Gearbox / transmission oil level and condition',
+        'Hydraulic oil and filter','All grease points serviced','Battery tested, terminals cleaned and protected',
+        'Brakes stripped, inspected and adjusted','Run-up / road test and record hours or mileage'] },
+
+ { id:'pre-season-check', name:'Pre-season readiness check', cls:'check', applies:'all',
+   every:12, window:[2,3,4], lead:45,
+   req:['Winter service confirmed complete and signed off','Tyres, pressures and wheel nut torque','All fluid levels topped up',
+        'Lights, beacons and horn','Tow ropes, weak links, hitches and pins','Radio fitted, tested and charged',
+        'Fire extinguisher and first aid kit aboard','Cab glass, mirrors and cleanliness','Asset signed fit for the season'] },
+
+ { id:'monthly-visual', name:'Monthly visual check', cls:'check', applies:'all',
+   every:1, window:[], lead:7,
+   req:['Leaks or fresh fluid under the machine','Tyres, tracks and wheels','Guards and covers secure',
+        'Lights and beacon working','Fluid levels','New damage since last check','General cleanliness',
+        'Daily inspection book up to date'] },
+
+ { id:'mot-road-legal', name:'MOT and road-legal check', cls:'statutory', applies:['towvehicle','bus'],
+   every:12, window:[], lead:60,
+   req:['MOT test booked and passed','Vehicle excise duty in date','Insurance cover confirmed',
+        'Tyre tread and condition to legal limit','Number plates and lighting legal','Documents filed in the office'] },
+
+ { id:'winch-cable-inspection', name:'Winch cable and cutter inspection', cls:'inspection', applies:['winch'],
+   every:3, window:[], lead:14,
+   req:['Full length of each cable / rope run inspected','Broken strands, kinks and birdcaging','Splices, ferrules and swages',
+        'Weak links and parachutes serviceable','Guillotine operation tested and blade condition','Drum spooling and level wind',
+        'Cable cutter test recorded in the winch log'] },
+
+ { id:'mower-deck-service', name:'Mower deck and blade service', cls:'major', applies:['mower'],
+   every:12, window:[10,11,12,3,4], lead:45,
+   req:['Blades or flails removed, inspected, sharpened or renewed','Blade bolts and pins renewed and torqued',
+        'Gearbox oil level and seals','Belts, pulleys and tension','Bearings greased and checked for play',
+        'Deck cleaned out and treated against corrosion','Guards and debris shields refitted'] },
+
+ { id:'handheld-service', name:'Hand-held equipment service', cls:'major', applies:['handheld'],
+   every:12, window:[10,11,12,1,2,3,4], lead:30,
+   req:['Spark plug renewed and gapped','Air filter cleaned or renewed','Fuel lines, primer and filter',
+        'Cutting head, line or blade and nut','Guard secure and correct','Harness and anti-vibration mounts',
+        'Throttle and stop switch tested','Exhaust decarbonised'] },
+
+ { id:'extinguisher-check', name:'Fire extinguisher check', cls:'statutory', applies:'all',
+   every:12, window:[], lead:30,
+   req:['Extinguisher present and correctly mounted','Pressure gauge in the green','Pin and tamper seal intact',
+        'Hose, horn and body undamaged','Service label in date','Replacement ordered if out of date'] }
+];
+
+/* -------------------- seed: daily inspection lists --------------------- */
+const DI_LISTS = {
+ tractor:['Engine oil level','Coolant level','Fuel level','Hydraulic oil level','Leaks under the machine',
+   'Tyres and pressures','Wheel nuts','Lights and beacon','Brakes and handbrake','Steering','Horn',
+   'PTO guard and shields','Hitch, pins and safety line','Seat and seatbelt','Mirrors and glass','Fire extinguisher'],
+ towvehicle:['Engine oil level','Coolant level','Screenwash','Fuel level','Leaks under the vehicle',
+   'Tyres, pressures and tread','Lights, indicators and beacon','Brakes and handbrake','Steering','Horn',
+   'Towball, hitch and electrics','Seatbelts','Mirrors and glass','Radio fitted and working','Fire extinguisher','Bodywork damage'],
+ bus:['Engine oil level','Coolant level','Fuel level','Leaks under the vehicle','Tyres, pressures and tread',
+   'Lights, indicators and hazards','Brakes and handbrake','Steering','Horn','Doors and steps','Seats and seatbelts',
+   'Mirrors and glass','Passenger area clean and clear','First aid kit','Fire extinguisher'],
+ winch:['Engine oil level','Coolant level','Fuel level and fuel state','Leaks under the winch','Battery and terminals',
+   'Belts and hoses','Cables free running and spooling','Cable condition, no broken strands','Weak links and parachutes',
+   'Guillotine and cable cutter tested','Drum brakes and clutches','Controls and instruments','Guards and covers',
+   'Radio and comms','Chocks, anchors and stability','Fire extinguisher'],
+ mower:['Blades or flails condition','Blade bolts and pins secure','Guards and debris shields','Belts and pulleys',
+   'Gearbox oil level','Grease points','Tyres and rollers','Hitch, PTO shaft and guard','Deck clear of debris','Leaks'],
+ utility:['Engine oil level','Coolant level','Fuel or battery charge','Tyres and pressures','Brakes and handbrake',
+   'Lights and beacon','Steering','Load bed and tailgate','Seatbelts','Leaks','Cleanliness'],
+ handheld:['Cutting head, line or blade','Guard fitted and secure','Harness and straps','Fuel and oil mix',
+   'Air filter','Throttle and stop switch tested','Anti-vibration mounts','No loose fasteners'],
+ other:['General condition','Guards and covers','Fluid levels','Leaks','Damage since last use']
+};
+
+/* ------------------------------- defaults ------------------------------- */
+const DEFAULT_SETTINGS = {
+  org:'Ground equipment',
+  engineer:'John Sconce',
+  engineerLeave:[1,2],                 // nothing routine gets done in Jan or Feb
+  majorBlackout:[5,6,7,8,9],           // no major servicing May–September
+  seasonMonths:[5,6,7,8,9],            // flying season
+  defaultInspectionMonths:12,
+  dueHorizonDays:30,
+  mileageEnabledDefault:false,
+  syncUrl:'', syncKey:'', siteId:'main',
+  autoSync:true,
+  lastSyncAt:0, lastCursor:0
+};
+window.__FM_CONST = { SEED_ASSETS, SEED_TASKS, DI_LISTS, DEFAULT_SETTINGS, TYPE_LABEL, MONTHS, MONTHS_FULL };
+
+/* =========================== database in memory ========================= */
+const DB = {
+  assets:[], tasks:[], completions:[], jobs:[], defects:[], inspections:[],
+  settings:Object.assign({},DEFAULT_SETTINGS), meta:{ created:now(), version:1 }
+};
+let dirty=false, saveTimer=null;
+
+function touch(rec){ rec.updatedAt=now(); rec.deleted=rec.deleted?1:0; return rec; }
+function persist(){ dirty=true; clearTimeout(saveTimer); saveTimer=setTimeout(async()=>{ await Store.save(serialise()); dirty=false; },250); }
+function serialise(){ return { assets:DB.assets, tasks:DB.tasks, completions:DB.completions, jobs:DB.jobs,
+    defects:DB.defects, inspections:DB.inspections, settings:DB.settings, meta:DB.meta }; }
+function live(list){ return list.filter(r=>!r.deleted); }
+function byId(list,id){ return list.find(r=>r.uuid===id && !r.deleted); }
+
+function seed(){
+  DB.assets = SEED_ASSETS.map(([num,name,cat,type,mile])=>touch({
+    uuid:uid(), num, name, category:cat, type, make:'', model:'', reg:'', serial:'', year:'',
+    trackMileage:!!mile, meter:mile?'miles':'hours', meterValue:null, trackMeter:false,
+    inspectionMonths:DEFAULT_SETTINGS.defaultInspectionMonths,
+    status:'active', unserviceable:false, notes:'', excluded:[], intervals:{}
+  }));
+  DB.tasks = SEED_TASKS.map(t=>touch(Object.assign({uuid:t.id},t,{builtin:true})));
+  DB.settings = Object.assign({},DEFAULT_SETTINGS);
+  DB.meta = { created:now(), version:1, seeded:true };
+}
+
+/* ============================ schedule engine =========================== */
+function taskApplies(task,asset){
+  if(asset.excluded && asset.excluded.indexOf(task.uuid)>=0) return false;
+  const a=task.applies;
+  if(a==='all') return true;
+  if(a==='vehicle'||a==='machinery') return asset.category===a;
+  if(Array.isArray(a)) return a.indexOf(asset.type)>=0;
+  return false;
+}
+function intervalFor(task,asset){
+  if(asset.intervals && asset.intervals[task.uuid]) return +asset.intervals[task.uuid];
+  if(task.uuid==='annual-inspection' && asset.inspectionMonths) return +asset.inspectionMonths;
+  return +task.every;
+}
+function allowedMonths(task){
+  let w = (task.window && task.window.length) ? task.window.slice() : [1,2,3,4,5,6,7,8,9,10,11,12];
+  if(task.cls==='major'){ const bl=DB.settings.majorBlackout||[]; w=w.filter(m=>bl.indexOf(m)<0); }
+  if(task.window && task.window.length){ const lv=DB.settings.engineerLeave||[]; const t=w.filter(m=>lv.indexOf(m)<0); if(t.length) w=t; }
+  return w.length?w:[1,2,3,4,5,6,7,8,9,10,11,12];
+}
+/* first date on or after `from` that sits inside the task's working window */
+function slideIntoWindow(from,task){
+  const w=allowedMonths(task); const d=parseISO(from); if(!d) return from;
+  if(w.indexOf(d.getMonth()+1)>=0) return from;
+  const c=new Date(d.getFullYear(),d.getMonth(),1);
+  for(let i=0;i<26;i++){ c.setMonth(c.getMonth()+1); if(w.indexOf(c.getMonth()+1)>=0) return todayISO(c); }
+  return from;
+}
+function lastDoneFor(assetId,taskId){
+  const c=live(DB.completions).filter(x=>x.assetId===assetId && x.taskId===taskId);
+  if(!c.length) return null;
+  return sortBy(c,x=>x.date).pop();
+}
+function scheduleFor(asset,ref){
+  ref = ref || todayISO();
+  const out=[];
+  live(DB.tasks).forEach(task=>{
+    if(!taskApplies(task,asset)) return;
+    const months=intervalFor(task,asset);
+    const last=lastDoneFor(asset.uuid,task.uuid);
+    const due = last ? addMonths(last.date,months) : null;
+    const lead = task.lead || DB.settings.dueHorizonDays;
+    let status='unknown', dleft=null, planned=due, blocked=false;
+    if(due){
+      dleft=daysBetween(ref,due);
+      planned=slideIntoWindow(due<ref?ref:due,task);
+      blocked = planned!==(due<ref?ref:due);
+      status = dleft<0 ? 'overdue' : (dleft<=lead ? 'due' : 'ok');
+    }else{
+      planned=slideIntoWindow(ref,task);
+    }
+    const pd=parseISO(planned);
+    const onLeave = pd && (DB.settings.engineerLeave||[]).indexOf(pd.getMonth()+1)>=0 && task.cls!=='check';
+    out.push({ asset, task, last, lastDate:last?last.date:null, due, dleft, status, planned, blocked, onLeave, months });
+  });
+  const rank={overdue:0,due:1,unknown:2,ok:3};
+  return out.sort((a,b)=> (rank[a.status]-rank[b.status]) || String(a.due||'9999').localeCompare(String(b.due||'9999')));
+}
+function fullSchedule(){
+  let rows=[]; live(DB.assets).filter(a=>a.status!=='retired').forEach(a=>{ rows=rows.concat(scheduleFor(a)); });
+  const rank={overdue:0,due:1,unknown:2,ok:3};
+  return rows.sort((a,b)=> (rank[a.status]-rank[b.status]) || String(a.due||'9999').localeCompare(String(b.due||'9999')) || a.asset.num-b.asset.num);
+}
+function statusChip(s,blocked){
+  const map={ overdue:['red','Overdue'], due:['amber','Due'], ok:['green','In date'], unknown:['grey','No record'] };
+  const m=map[s]||map.unknown;
+  return '<span class="chip '+m[0]+'">'+m[1]+'</span>'+(blocked?' <span class="chip plain" title="Outside the permitted working window">Window</span>':'');
+}
+function assetLineTight(a){
+  if(!a) return '<span class="muted">Unknown</span>';
+  return '<span class="assetline">'+plateHTML(a,'sm')+'<span class="nm">'+esc(a.name)+
+    (a.unserviceable?'<br><span class="chip red">Unserviceable</span>':'')+'</span></span>';
+}
+function assetById(id){ return byId(DB.assets,id); }
+function assetLabel(a){ return a? (a.num+' · '+a.name) : 'Unknown asset'; }
+function plateHTML(a,cls){ return '<span class="plate '+(cls||'')+'">'+esc(a?a.num:'?')+'</span>'; }
+function assetLine(a,cls){
+  if(!a) return '<span class="muted">Unknown asset</span>';
+  return '<span class="assetline">'+plateHTML(a,cls)+'<span><span class="nm">'+esc(a.name)+'</span>'+
+    (a.unserviceable?' <span class="chip red">Unserviceable</span>':'')+
+    '<br><span class="ty">'+esc(TYPE_LABEL[a.type]||a.type)+' · '+(a.category==='vehicle'?'Vehicle':'Machinery')+'</span></span></span>';
+}
+function openDefects(assetId){ return live(DB.defects).filter(d=>d.status!=='rectified'&&d.status!=='closed'&&(!assetId||d.assetId===assetId)); }
+
+/* ============================== navigation ============================= */
+const ICONS={
+  today:'<svg viewBox="0 0 24 24"><path d="M3 10.5 12 4l9 6.5"/><path d="M5 9.6V20h14V9.6"/><path d="M9.5 20v-5.5h5V20"/></svg>',
+  schedule:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="m9 15 2 2 4-4"/></svg>',
+  di:'<svg viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="2"/><path d="M9 6.5h6M9 10h6M9 13.5h4"/><circle cx="12" cy="18" r=".6"/></svg>',
+  jobs:'<svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"/><path d="M9 7V5h6v2"/><path d="M4 12h16"/></svg>',
+  defects:'<svg viewBox="0 0 24 24"><path d="M12 4 2.5 20h19z"/><path d="M12 10v4.5M12 17.4v.2"/></svg>',
+  assets:'<svg viewBox="0 0 24 24"><path d="M3 16.5V11l3-4.5h8l3 3h4v7"/><circle cx="7.5" cy="17" r="2.2"/><circle cx="17" cy="17" r="2.2"/></svg>',
+  parts:'<svg viewBox="0 0 24 24"><path d="M12 3.2 20 7.6v8.8L12 20.8 4 16.4V7.6z"/><path d="M4 7.6 12 12l8-4.4M12 12v8.8"/></svg>',
+  reports:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7.5 16v-4M12 16V8M16.5 16v-6"/></svg>',
+  settings:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.6v2.6M12 18.8v2.6M21.4 12h-2.6M5.2 12H2.6M18.6 5.4l-1.8 1.8M7.2 16.8l-1.8 1.8M18.6 18.6l-1.8-1.8M7.2 7.2 5.4 5.4"/></svg>',
+  more:'<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/></svg>'
+};
+const NAV=[
+  {id:'today',    label:'Today',    icon:'today'},
+  {id:'schedule', label:'Schedule', icon:'schedule'},
+  {id:'di',       label:'Inspect',  icon:'di',   full:'Daily inspection'},
+  {id:'jobs',     label:'Jobs',     icon:'jobs', full:'Job cards'},
+  {id:'defects',  label:'Defects',  icon:'defects'},
+  {id:'assets',   label:'Assets',   icon:'assets', full:'Asset register'},
+  {id:'parts',    label:'Parts',    icon:'parts', full:'Parts used'},
+  {id:'settings', label:'Settings', icon:'settings'}
+];
+const MOBILE_TABS=['today','schedule','di','jobs'];
+let VIEW='today', PARAM={};
+function go(v,p){ VIEW=v; PARAM=p||{}; closeSheet(); render(); window.scrollTo(0,0); }
+
+function paintNav(){
+  $('#railNav').innerHTML = NAV.map(n=>'<button data-go="'+n.id+'" aria-current="'+(VIEW===n.id)+'">'+ICONS[n.icon]+'<span>'+esc(n.full||n.label)+'</span></button>').join('');
+  const tabs = MOBILE_TABS.map(id=>{ const n=NAV.find(x=>x.id===id);
+    return '<button data-go="'+n.id+'" aria-current="'+(VIEW===n.id)+'">'+ICONS[n.icon]+'<span>'+esc(n.label)+'</span></button>'; });
+  const isMore = MOBILE_TABS.indexOf(VIEW)<0;
+  tabs.push('<button data-sheet="1" aria-current="'+isMore+'">'+ICONS.more+'<span>More</span></button>');
+  $('#tabbar').innerHTML = tabs.join('');
+  const cur=NAV.find(n=>n.id===VIEW)||NAV[0];
+  $('#mTitle').textContent = cur.full||cur.label;
+  $('#railOrg').textContent = DB.settings.org||'Ground equipment';
+  $('#mSub').textContent = DB.settings.org||'Ground equipment';
+}
+function openSheet(){
+  $('#overlay').innerHTML='<div class="scrim" data-close-sheet="1"></div><div class="sheet">'+
+    NAV.filter(n=>MOBILE_TABS.indexOf(n.id)<0).map(n=>'<button data-go="'+n.id+'">'+ICONS[n.icon]+esc(n.full||n.label)+'</button>').join('')+
+    '<button data-close-sheet="1">'+ICONS.more+'Close</button></div>';
+}
+function closeSheet(){ const s=$('.sheet'); if(s) $('#overlay').innerHTML=''; }
+function toast(msg){
+  const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2600);
+}
+
+/* ================================ modal ================================ */
+let modalSave=null;
+function modal(title, body, footer, onSave){
+  modalSave=onSave||null;
+  const el=document.createElement('div'); el.className='modal'; el.id='modal';
+  el.innerHTML='<div class="card"><header><h2>'+esc(title)+'</h2><div class="spacer"></div>'+
+    '<button class="iconbtn" data-close-modal="1" style="background:var(--panel-2);border-color:var(--rule);color:var(--ink)">Close</button></header>'+
+    '<div class="body">'+body+'</div>'+(footer?'<footer>'+footer+'</footer>':'')+'</div>';
+  document.body.appendChild(el);
+  el.addEventListener('click',e=>{ if(e.target===el) closeModal(); });
+  const f=el.querySelector('input,select,textarea'); if(f) setTimeout(()=>f.focus(),60);
+  return el;
+}
+function closeModal(){ const m=$('#modal'); if(m) m.remove(); modalSave=null; }
+
+/* =============================== rendering ============================== */
+function render(){
+  paintNav();
+  const v=$('#view');
+  const fn={today:viewToday, schedule:viewSchedule, di:viewDI, jobs:viewJobs, defects:viewDefects,
+            assets:viewAssets, parts:viewParts, settings:viewSettings}[VIEW]||viewToday;
+  v.innerHTML = deskHead() + fn();
+  paintSyncState();
+}
+function deskHead(){
+  const cur=NAV.find(n=>n.id===VIEW)||NAV[0];
+  return '<div class="desk-head"><h1>'+esc(cur.full||cur.label)+'</h1></div>';
+}
+
+/* ------------------------------- TODAY --------------------------------- */
+function seasonBand(){
+  const m=new Date().getMonth()+1, s=DB.settings;
+  const cells=MONTHS.map((mo,i)=>{ const n=i+1; let c='mo';
+    if((s.majorBlackout||[]).indexOf(n)>=0) c+=' blackout';
+    else if((s.engineerLeave||[]).indexOf(n)>=0) c+=' leave';
+    else c+=' window';
+    if(n===m) c+=' now';
+    return '<div class="'+c+'"><b>'+mo+'</b><i></i></div>'; }).join('');
+  return '<div class="panel"><header><h2>Working year</h2><div class="spacer"></div>'+
+    '<span class="small muted">'+esc(DB.settings.engineer||'Engineer')+' plans around this</span></header><div class="body">'+
+    '<div class="season">'+cells+'</div><div class="legend">'+
+    '<span><i style="background:var(--green)"></i>Servicing window</span>'+
+    '<span><i style="background:var(--grey);opacity:.6"></i>Engineer away — faults only</span>'+
+    '<span><i style="background:var(--red)"></i>Flying season — no major servicing</span></div>'+
+    '<p class="small muted" style="margin-top:9px">Routine work is planned into the winter window and everything is made ready for the season by the end of March. Fault rectification can be raised and carried out in any month by anyone available.</p>'+
+    '</div></div>';
+}
+function viewToday(){
+  const sch=fullSchedule();
+  const overdue=sch.filter(r=>r.status==='overdue');
+  const due=sch.filter(r=>r.status==='due');
+  const unknown=sch.filter(r=>r.status==='unknown');
+  const defs=openDefects();
+  const grounded=live(DB.assets).filter(a=>a.unserviceable);
+  const m=new Date().getMonth()+1;
+  let banners='';
+  if(grounded.length) banners+='<div class="banner red"><b>'+grounded.length+' machine'+(grounded.length===1?'':'s')+' unserviceable.</b> '+
+    esc(grounded.map(a=>a.num+' '+a.name).join(', '))+' must not be used until the defect is cleared.</div>';
+  if((DB.settings.majorBlackout||[]).indexOf(m)>=0)
+    banners+='<div class="banner amber">It is '+MONTHS_FULL[m-1]+' — the flying season. Major servicing is held over until October. Inspections, monthly visual checks and fault rectification carry on as normal.</div>';
+  else if((DB.settings.engineerLeave||[]).indexOf(m)>=0)
+    banners+='<div class="banner blue">'+esc(DB.settings.engineer||'The engineer')+' is away this month, so no routine servicing is booked. Defects can still be rectified by anyone available.</div>';
+  if(unknown.length)
+    banners+='<div class="banner blue">'+unknown.length+' scheduled item'+(unknown.length===1?' has':'s have')+' no last-completed date yet. Set the baseline dates so the reminders work — <button class="btn sm" data-go="settings" style="margin-left:6px">Open settings</button></div>';
+
+  const kpi='<div class="kpis">'+
+    '<button class="kpi red" data-go="schedule" data-f="overdue"><div class="n">'+overdue.length+'</div><div class="l">Overdue</div></button>'+
+    '<button class="kpi amber" data-go="schedule" data-f="due"><div class="n">'+due.length+'</div><div class="l">Due soon</div></button>'+
+    '<button class="kpi blue" data-go="defects"><div class="n">'+defs.length+'</div><div class="l">Open defects</div></button>'+
+    '<button class="kpi green" data-go="assets"><div class="n">'+live(DB.assets).length+'</div><div class="l">Assets on the books</div></button>'+
+    '</div>';
+
+  const attention=overdue.concat(due).slice(0,12);
+  const list = attention.length ? scheduleTable(attention,true) :
+    (unknown.length ? '<div class="empty"><b>Nothing is due yet</b>Due dates start once the baseline dates are in.</div>'
+                    : '<div class="empty"><b>Nothing is due</b>Everything on the register is in date.</div>');
+
+  const recentDI=sortBy(live(DB.inspections),i=>i.date).reverse().slice(0,5);
+  const diPanel='<div class="panel"><header><h2>Latest daily inspections</h2><div class="spacer"></div>'+
+    '<button class="btn sm go" data-go="di">Start an inspection</button></header><div class="body flush">'+
+    (recentDI.length? '<div class="tablewrap"><table><thead><tr><th>Machine</th><th>Date</th><th>By</th><th>Result</th></tr></thead><tbody>'+
+      recentDI.map(i=>{ const a=assetById(i.assetId); const bad=(i.items||[]).filter(x=>x.v==='def').length;
+        return '<tr class="clickable" data-di="'+i.uuid+'"><td>'+assetLine(a,'sm')+'</td><td class="mono nowrap">'+fmtDate(i.date)+'</td><td>'+esc(i.by||'—')+'</td>'+
+        '<td>'+(bad? '<span class="chip red">'+bad+' defect'+(bad===1?'':'s')+'</span>' : '<span class="chip green">All serviceable</span>')+'</td></tr>'; }).join('')+
+      '</tbody></table></div>'
+      : '<div class="empty"><b>No inspections recorded yet</b>Daily inspections done in the sheds are written in the log books; anything captured here syncs to the office.</div>')+
+    '</div></div>';
+
+  return banners+kpi+
+    '<div class="panel"><header><h2>Needs attention</h2><div class="spacer"></div><button class="btn sm" data-go="schedule">Full schedule</button></header>'+
+    '<div class="body flush">'+list+'</div></div>'+
+    seasonBand()+diPanel;
+}
+
+/* ------------------------------ SCHEDULE -------------------------------- */
+function reqCell(task,open){
+  const r=task.req||[];
+  if(!r.length) return '<span class="muted small">No checklist set</span>';
+  const list='<ul class="reqlist">'+r.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>';
+  if(open||r.length<=3) return list;
+  return '<details class="req"><summary>'+r.length+' things to do</summary>'+list+'</details>';
+}
+function scheduleTable(rows,compact){
+  if(!rows.length) return '<div class="empty"><b>Nothing here</b>Change the filters to see more.</div>';
+  return '<div class="tablewrap"><table><thead><tr>'+
+    '<th style="min-width:150px">Machine or vehicle</th>'+
+    '<th style="min-width:150px">Service due</th>'+
+    '<th style="min-width:130px">What that service involves</th>'+
+    '<th>Last done</th><th>Due</th><th>Plan for</th><th>Status</th><th></th></tr></thead><tbody>'+
+    rows.map(r=>{
+      const notes=[];
+      if(r.blocked) notes.push('Held until '+MONTHS_FULL[parseISO(r.planned).getMonth()]+' — outside the working window');
+      if(r.onLeave) notes.push(esc(DB.settings.engineer||'Engineer')+' is away that month');
+      return '<tr>'+
+      '<td>'+assetLineTight(r.asset)+'</td>'+
+      '<td><b>'+esc(r.task.name)+'</b><div class="subrow"><span class="chip plain">'+esc(clsLabel(r.task.cls))+'</span>'+
+        '<span class="small muted">every '+r.months+' month'+(r.months===1?'':'s')+'</span></div></td>'+
+      '<td>'+reqCell(r.task)+'</td>'+
+      '<td class="mono nowrap">'+(r.lastDate?fmtDate(r.lastDate):'<span class="muted">—</span>')+'</td>'+
+      '<td class="mono nowrap">'+(r.due?fmtDate(r.due):'<span class="muted">—</span>')+
+        (r.dleft!==null?'<div class="small muted">'+relDays(r.dleft)+'</div>':'')+'</td>'+
+      '<td class="mono nowrap">'+fmtDate(r.planned)+(notes.length?'<div class="small muted">'+notes.join('<br>')+'</div>':'')+'</td>'+
+      '<td>'+statusChip(r.status,r.blocked)+'</td>'+
+      '<td class="nowrap"><button class="btn sm" data-complete="'+r.asset.uuid+'|'+r.task.uuid+'">Record</button></td>'+
+      '</tr>';
+    }).join('')+'</tbody></table></div>';
+}
+function clsLabel(c){ return {statutory:'Statutory',inspection:'Inspection',major:'Major service',check:'Routine check'}[c]||c; }
+
+let SCHED_F={ status:'', cat:'', asset:'', cls:'' };
+function viewSchedule(){
+  if(PARAM.f){ SCHED_F.status=PARAM.f; PARAM.f=null; }
+  let rows=fullSchedule();
+  if(SCHED_F.status) rows=rows.filter(r=>r.status===SCHED_F.status);
+  if(SCHED_F.cat) rows=rows.filter(r=>r.asset.category===SCHED_F.cat);
+  if(SCHED_F.asset) rows=rows.filter(r=>r.asset.uuid===SCHED_F.asset);
+  if(SCHED_F.cls) rows=rows.filter(r=>r.task.cls===SCHED_F.cls);
+  const assets=sortBy(live(DB.assets),a=>a.num);
+  const f='<div class="filters">'+
+    sel('f-status',[['','Any status'],['overdue','Overdue'],['due','Due soon'],['unknown','No record'],['ok','In date']],SCHED_F.status)+
+    sel('f-cat',[['','Vehicles and machinery'],['vehicle','Vehicles only'],['machinery','Machinery only']],SCHED_F.cat)+
+    sel('f-cls',[['','Any type of work'],['statutory','Statutory'],['inspection','Inspection'],['major','Major service'],['check','Routine check']],SCHED_F.cls)+
+    sel('f-asset',[['','Every asset']].concat(assets.map(a=>[a.uuid,a.num+' · '+a.name])),SCHED_F.asset)+
+    '<button class="btn sm" data-print="1">Print</button></div>';
+  const counts=fullSchedule();
+  const summary='<p class="small muted">'+counts.filter(r=>r.status==='overdue').length+' overdue · '+
+    counts.filter(r=>r.status==='due').length+' due soon · '+counts.filter(r=>r.status==='ok').length+' in date · '+
+    counts.filter(r=>r.status==='unknown').length+' with no record. Showing '+rows.length+'.</p>';
+  return f+summary+'<div class="panel"><div class="body flush">'+scheduleTable(rows)+'</div></div>'+plannerPanel();
+}
+function sel(id,opts,val){
+  return '<select id="'+id+'">'+opts.map(o=>'<option value="'+esc(o[0])+'"'+(String(val)===String(o[0])?' selected':'')+'>'+esc(o[1])+'</option>').join('')+'</select>';
+}
+function plannerPanel(){
+  const rows=fullSchedule().filter(r=>r.status!=='ok');
+  const buckets={};
+  rows.forEach(r=>{ const d=parseISO(r.planned); if(!d) return; const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    (buckets[k]=buckets[k]||[]).push(r); });
+  const keys=Object.keys(buckets).sort().slice(0,8);
+  if(!keys.length) return '';
+  return '<div class="panel"><header><h2>When the work lands</h2><div class="spacer"></div>'+
+    '<span class="small muted">after the seasonal rules are applied</span></header><div class="body">'+
+    keys.map(k=>{ const [y,mo]=k.split('-'); const list=buckets[k];
+      const leave=(DB.settings.engineerLeave||[]).indexOf(+mo)>=0;
+      return '<div class="repeat"><div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap">'+
+        '<b>'+MONTHS_FULL[+mo-1]+' '+y+'</b><span class="chip '+(list.length>8?'amber':'plain')+'">'+list.length+' item'+(list.length===1?'':'s')+'</span>'+
+        (leave?'<span class="chip grey">'+esc(DB.settings.engineer||'Engineer')+' away</span>':'')+'</div>'+
+        '<div class="small muted">'+esc(list.slice(0,7).map(r=>r.asset.num+' '+r.task.name).join(' · '))+(list.length>7?' · +'+(list.length-7)+' more':'')+'</div>'+
+        '</div>'; }).join('')+
+    '</div></div>';
+}
+
+/* ------------------------- record a completed task ---------------------- */
+function completeDialog(assetId,taskId){
+  const a=assetById(assetId), t=byId(DB.tasks,taskId); if(!a||!t) return;
+  const meterRow = (a.trackMileage||a.trackMeter) ?
+    '<label class="f"><span>'+(a.trackMileage?'Mileage':'Hours')+' reading</span><input type="number" id="c-meter" value="'+(a.meterValue!=null?a.meterValue:'')+'"></label>' : '';
+  const body='<div class="banner blue" style="margin-bottom:12px">'+assetLine(a,'sm')+'</div>'+
+    '<h3>'+esc(t.name)+'</h3><p class="small muted">Tick off what was done. Anything left unticked is noted on the record.</p>'+
+    (t.req||[]).map((r,i)=>'<div class="checkline"><input type="checkbox" id="rq'+i+'" data-req="'+i+'" checked><label for="rq'+i+'">'+esc(r)+'</label></div>').join('')+
+    '<div class="hr"></div><div class="grid2">'+
+    '<label class="f"><span>Date completed</span><input type="date" id="c-date" value="'+todayISO()+'"></label>'+
+    '<label class="f"><span>Carried out by</span><input type="text" id="c-by" value="'+esc(DB.settings.engineer||'')+'"></label>'+
+    '</div>'+meterRow+
+    '<label class="f"><span>Notes</span><textarea id="c-notes" placeholder="Anything found, adjusted or left for later"></textarea></label>'+
+    '<div class="checkline"><input type="checkbox" id="c-job" checked><label for="c-job">Also open a job card for this work</label></div>';
+  modal('Record work done', body,
+    '<button class="btn" data-close-modal="1">Cancel</button><button class="btn go" id="c-save">Save record</button>');
+  $('#c-save').onclick=()=>{
+    const date=$('#c-date').value||todayISO();
+    const done=(t.req||[]).map((r,i)=>({item:r, done:$('#rq'+i).checked}));
+    const rec=touch({uuid:uid(), assetId, taskId, date, by:$('#c-by').value.trim(), notes:$('#c-notes').value.trim(),
+      meter: $('#c-meter')?Number($('#c-meter').value)||null:null, items:done});
+    DB.completions.push(rec);
+    if($('#c-meter') && $('#c-meter').value){ a.meterValue=Number($('#c-meter').value); touch(a); }
+    if($('#c-job').checked){
+      const job=touch({uuid:uid(), ref:nextRef('JC-',DB.jobs,'ref'), assetId, date, type:clsLabel(t.cls),
+        title:t.name, by:rec.by, status:'closed', work:done.filter(d=>d.done).map(d=>d.item).join('; '),
+        notes:rec.notes, faults:[], parts:[], hours:null, meter:rec.meter});
+      DB.jobs.push(job);
+    }
+    persist(); closeModal(); render(); toast('Recorded — next due '+fmtDate(addMonths(date,intervalFor(t,a))));
+  };
+}
+
+/* --------------------------- DAILY INSPECTION --------------------------- */
+let DI_STATE=null;
+function diListFor(a){
+  const custom=(DB.settings.diLists||{})[a.type];
+  return (custom&&custom.length)?custom:(DI_LISTS[a.type]||DI_LISTS.other);
+}
+function startDI(assetId,kind){
+  const a=assetById(assetId); if(!a) return;
+  DI_STATE={ assetId, kind:kind||'daily', date:todayISO(), by:'', meter:'',
+    items:diListFor(a).map(q=>({q, v:'', note:''})), general:'' };
+  go('di',{asset:assetId});
+}
+function viewDI(){
+  if(PARAM.asset && (!DI_STATE || DI_STATE.assetId!==PARAM.asset)){
+    const a0=assetById(PARAM.asset);
+    if(a0) DI_STATE={ assetId:PARAM.asset, kind:PARAM.kind||'daily', date:todayISO(), by:'', meter:'',
+      items:diListFor(a0).map(q=>({q, v:'', note:''})), general:'' };
+  }
+  if(!DI_STATE) return diPicker();
+  const a=assetById(DI_STATE.assetId);
+  if(!a){ DI_STATE=null; return diPicker(); }
+  const done=DI_STATE.items.filter(i=>i.v).length, total=DI_STATE.items.length;
+  const bad=DI_STATE.items.filter(i=>i.v==='def').length;
+  const meterRow=(a.trackMileage||a.trackMeter)?
+    '<label class="f"><span>'+(a.trackMileage?'Mileage':'Hours run')+'</span><input type="number" id="di-meter" value="'+esc(DI_STATE.meter)+'" placeholder="'+(a.meterValue!=null?a.meterValue:'reading')+'"></label>':'';
+  return '<button class="btn sm" data-di-back="1" style="margin-bottom:10px">Choose a different machine</button>'+
+    '<div class="panel"><header>'+assetLine(a,'lg')+'</header><div class="body">'+
+      (a.unserviceable?'<div class="banner red">This machine is marked unserviceable. Do not put it into use until the defect is cleared.</div>':'')+
+      '<div class="grid2">'+
+      '<label class="f"><span>Date</span><input type="date" id="di-date" value="'+DI_STATE.date+'"></label>'+
+      '<label class="f"><span>Inspected by</span><input type="text" id="di-by" value="'+esc(DI_STATE.by)+'" placeholder="Your name"></label>'+
+      '</div>'+meterRow+
+      '<p class="small muted">'+done+' of '+total+' checked'+(bad?' · '+bad+' defect'+(bad===1?'':'s')+' found':'')+'</p>'+
+    '</div></div>'+
+    '<div class="panel"><header><h2>Walk-round checklist</h2><div class="spacer"></div>'+
+      '<button class="btn sm" data-di-allok="1">Mark all serviceable</button></header><div class="body">'+
+      DI_STATE.items.map((it,i)=>'<div class="di-item '+(it.v==='def'?'def':it.v==='na'?'na':'')+'">'+
+        '<div class="q">'+esc(it.q)+'</div>'+
+        '<div class="seg">'+
+          '<button data-di-set="'+i+'|ok"  data-v="ok"  aria-pressed="'+(it.v==='ok')+'">Serviceable</button>'+
+          '<button data-di-set="'+i+'|def" data-v="def" aria-pressed="'+(it.v==='def')+'">Defect</button>'+
+          '<button data-di-set="'+i+'|na"  data-v="na"  aria-pressed="'+(it.v==='na')+'">N/A</button>'+
+        '</div>'+
+        (it.v==='def'?'<label class="f" style="margin-top:9px"><span>What is wrong</span>'+
+          '<input type="text" data-di-note="'+i+'" value="'+esc(it.note)+'" placeholder="Describe the fault"></label>'+
+          '<div class="checkline"><input type="checkbox" data-di-ground="'+i+'" '+(it.ground?'checked':'')+'><label>Machine is unusable until this is fixed</label></div>':'')+
+        '</div>').join('')+
+      '<label class="f"><span>Anything else</span><textarea id="di-gen" placeholder="General remarks">'+esc(DI_STATE.general)+'</textarea></label>'+
+      '<div class="btnrow"><button class="btn go block" id="di-save">Submit inspection'+(bad?' and raise '+bad+' defect'+(bad===1?'':'s'):'')+'</button></div>'+
+    '</div></div>'+
+    diHistory(a);
+}
+function diPicker(){
+  const assets=sortBy(live(DB.assets).filter(a=>a.status!=='retired'),a=>a.num);
+  const grp=(cat,title)=>{ const l=assets.filter(a=>a.category===cat); if(!l.length) return '';
+    return '<div class="panel"><header><h2>'+title+'</h2><div class="spacer"></div><span class="small muted">'+l.length+'</span></header><div class="body">'+
+      '<div class="pickgrid">'+l.map(a=>{
+        const last=sortBy(live(DB.inspections).filter(i=>i.assetId===a.uuid),i=>i.date).pop();
+        return '<button class="pick '+(a.unserviceable?'us':'')+'" data-pick="'+a.uuid+'">'+plateHTML(a)+
+        '<span><span class="nm">'+esc(a.name)+'</span><br><span class="ty">'+(last?'last checked '+fmtDate(last.date):'no check recorded')+'</span></span></button>'; }).join('')+
+      '</div></div></div>'; };
+  return '<div class="banner blue">Pick the machine you are about to inspect. Everything is stored on this device straight away and goes to the office the next time it reaches the network.</div>'+
+    grp('vehicle','Vehicles')+grp('machinery','Machinery');
+}
+function diHistory(a){
+  const list=sortBy(live(DB.inspections).filter(i=>i.assetId===a.uuid),i=>i.date).reverse().slice(0,8);
+  if(!list.length) return '';
+  return '<div class="panel"><header><h2>Recent checks on this machine</h2></header><div class="body flush"><div class="tablewrap"><table>'+
+    '<thead><tr><th>Date</th><th>By</th><th>Type</th><th>Result</th></tr></thead><tbody>'+
+    list.map(i=>{ const bad=(i.items||[]).filter(x=>x.v==='def').length;
+      return '<tr class="clickable" data-di="'+i.uuid+'"><td class="mono nowrap">'+fmtDate(i.date)+'</td><td>'+esc(i.by||'—')+'</td>'+
+      '<td>'+(i.kind==='monthly'?'Monthly visual':'Daily inspection')+'</td>'+
+      '<td>'+(bad?'<span class="chip red">'+bad+' defect'+(bad===1?'':'s')+'</span>':'<span class="chip green">All serviceable</span>')+'</td></tr>'; }).join('')+
+    '</tbody></table></div></div></div>';
+}
+function saveDI(){
+  const a=assetById(DI_STATE.assetId); if(!a) return;
+  const unchecked=DI_STATE.items.filter(i=>!i.v).length;
+  if(unchecked && !confirm(unchecked+' item'+(unchecked===1?' has':'s have')+' not been marked. Submit anyway?')) return;
+  const by=($('#di-by')&&$('#di-by').value.trim())||'';
+  if(!by){ toast('Put your name in first'); const f=$('#di-by'); if(f) f.focus(); return; }
+  const date=($('#di-date')&&$('#di-date').value)||todayISO();
+  const meterEl=$('#di-meter'); const meter=meterEl&&meterEl.value?Number(meterEl.value):null;
+  const insp=touch({uuid:uid(), assetId:a.uuid, kind:DI_STATE.kind, date, by, meter,
+    general:($('#di-gen')&&$('#di-gen').value.trim())||'',
+    items:DI_STATE.items.map(i=>({q:i.q,v:i.v,note:i.note||''}))});
+  DB.inspections.push(insp);
+  if(meter!=null){ a.meterValue=meter; touch(a); }
+  let raised=0, ground=false;
+  DI_STATE.items.forEach(i=>{ if(i.v!=='def') return; raised++;
+    if(i.ground) ground=true;
+    DB.defects.push(touch({uuid:uid(), ref:nextRef('DEF-',DB.defects,'ref'), assetId:a.uuid, date, raisedBy:by,
+      source:'Daily inspection', item:i.q, fault:(i.note||i.q), severity:i.ground?'grounded':'normal',
+      status:'open', remedy:'', rectifiedBy:'', rectifiedDate:'', jobId:'', parts:[]}));
+  });
+  if(ground){ a.unserviceable=true; touch(a); }
+  if(DI_STATE.kind==='monthly'){
+    DB.completions.push(touch({uuid:uid(), assetId:a.uuid, taskId:'monthly-visual', date, by,
+      notes:'Recorded from the monthly visual check', items:[]}));
+  }
+  persist(); DI_STATE=null;
+  go('di',{});
+  toast(raised? 'Inspection saved — '+raised+' defect'+(raised===1?'':'s')+' raised' : 'Inspection saved — all serviceable');
+}
+function showInspection(id){
+  const i=byId(DB.inspections,id); if(!i) return; const a=assetById(i.assetId);
+  const body='<div class="banner blue">'+assetLine(a,'sm')+'</div>'+
+    '<p class="small muted">'+esc(i.kind==='monthly'?'Monthly visual check':'Daily inspection')+' · '+fmtDate(i.date)+' · '+esc(i.by||'—')+
+    (i.meter!=null?' · '+i.meter+' '+(a&&a.trackMileage?'miles':'hours'):'')+'</p>'+
+    '<div class="tablewrap"><table><thead><tr><th>Item</th><th>Result</th><th>Note</th></tr></thead><tbody>'+
+    (i.items||[]).map(x=>'<tr><td>'+esc(x.q)+'</td><td>'+
+      (x.v==='ok'?'<span class="chip green">Serviceable</span>':x.v==='def'?'<span class="chip red">Defect</span>':x.v==='na'?'<span class="chip grey">N/A</span>':'<span class="chip plain">Not checked</span>')+
+      '</td><td>'+esc(x.note||'')+'</td></tr>').join('')+'</tbody></table></div>'+
+    (i.general?'<p><b>Remarks:</b> '+esc(i.general)+'</p>':'');
+  modal('Inspection record', body, '<button class="btn" data-close-modal="1">Close</button><button class="btn" onclick="window.print()">Print</button>');
+}
+
+/* ------------------------------- JOB CARDS ------------------------------ */
+let JOBS_F={q:'',asset:'',status:''};
+function jobCost(j){
+  const p=(j.parts||[]).reduce((s,x)=>s+(Number(x.cost)||0)*(Number(x.qty)||0),0);
+  return p+(Number(j.labourCost)||0);
+}
+function viewJobs(){
+  let list=sortBy(live(DB.jobs),j=>j.date).reverse();
+  if(JOBS_F.asset) list=list.filter(j=>j.assetId===JOBS_F.asset);
+  if(JOBS_F.status) list=list.filter(j=>(j.status||'open')===JOBS_F.status);
+  if(JOBS_F.q){ const q=JOBS_F.q.toLowerCase();
+    list=list.filter(j=>[j.ref,j.title,j.work,j.notes,(j.faults||[]).map(f=>f.fault+' '+f.remedy).join(' '),
+      (j.parts||[]).map(p=>p.desc+' '+p.partNo).join(' ')].join(' ').toLowerCase().indexOf(q)>=0); }
+  const assets=sortBy(live(DB.assets),a=>a.num);
+  const filters='<div class="filters">'+
+    '<input type="text" id="j-q" placeholder="Search jobs, faults or parts" value="'+esc(JOBS_F.q)+'">'+
+    sel('j-asset',[['','Every asset']].concat(assets.map(a=>[a.uuid,a.num+' · '+a.name])),JOBS_F.asset)+
+    sel('j-status',[['','Open and closed'],['open','Open'],['closed','Closed']],JOBS_F.status)+
+    '<button class="btn sm go" data-newjob="1">New job card</button>'+
+    '<button class="btn sm" data-print="1">Print</button></div>';
+  const table = list.length ? '<div class="tablewrap"><table><thead><tr>'+
+      '<th>Card</th><th style="min-width:170px">Machine</th><th>Date</th><th style="min-width:180px">Work carried out</th>'+
+      '<th style="min-width:200px">Fault requiring remedy</th><th style="min-width:220px">Remedy</th>'+
+      '<th style="min-width:200px">Parts used</th><th>Cost</th><th></th></tr></thead><tbody>'+
+      list.map(j=>{ const a=assetById(j.assetId);
+        return '<tr class="clickable" data-job="'+j.uuid+'">'+
+        '<td class="mono nowrap">'+esc(j.ref)+'<div>'+(j.status==='open'?'<span class="chip amber">Open</span>':'<span class="chip green">Closed</span>')+'</div></td>'+
+        '<td>'+assetLine(a,'sm')+'</td>'+
+        '<td class="mono nowrap">'+fmtDate(j.date)+'<div class="small muted">'+esc(j.by||'')+'</div></td>'+
+        '<td><b>'+esc(j.title||'')+'</b>'+(j.work?'<div class="small muted">'+esc(j.work)+'</div>':'')+'</td>'+
+        '<td>'+((j.faults||[]).length?'<ul class="reqlist">'+j.faults.map(f=>'<li>'+esc(f.fault)+'</li>').join('')+'</ul>':'<span class="muted">—</span>')+'</td>'+
+        '<td>'+((j.faults||[]).length?'<ul class="reqlist">'+j.faults.map(f=>'<li>'+(f.remedy?esc(f.remedy):'<span class="chip amber">Not yet done</span>')+'</li>').join('')+'</ul>':'<span class="muted">—</span>')+'</td>'+
+        '<td>'+((j.parts||[]).length?'<ul class="reqlist">'+j.parts.map(p=>'<li>'+esc(p.qty||1)+' × '+esc(p.desc)+(p.partNo?' <span class="mono">('+esc(p.partNo)+')</span>':'')+'</li>').join('')+'</ul>':'<span class="muted">—</span>')+'</td>'+
+        '<td class="mono nowrap">'+money(jobCost(j))+'</td>'+
+        '<td><button class="btn sm" data-job="'+j.uuid+'">Open</button></td></tr>'; }).join('')+
+      '</tbody></table></div>'
+    : '<div class="empty"><b>No job cards yet</b>Every service, repair and defect rectification gets a card so the history stays with the machine.</div>';
+  return filters+'<div class="panel"><div class="body flush">'+table+'</div></div>';
+}
+
+let JOB_EDIT=null;
+function newJob(assetId,preset){
+  JOB_EDIT=Object.assign({uuid:uid(), ref:nextRef('JC-',DB.jobs,'ref'), assetId:assetId||'', date:todayISO(),
+    type:'Repair', title:'', by:DB.settings.engineer||'', status:'open', work:'', notes:'',
+    faults:[], parts:[], hours:'', labourCost:'', meter:null, _new:true}, preset||{});
+  jobDialog();
+}
+function editJob(id){
+  const j=byId(DB.jobs,id); if(!j) return;
+  JOB_EDIT=JSON.parse(JSON.stringify(j)); JOB_EDIT._new=false; jobDialog();
+}
+function jobDialog(){
+  const j=JOB_EDIT;
+  const assets=sortBy(live(DB.assets),a=>a.num);
+  const body='<div class="grid2">'+
+    '<label class="f"><span>Machine or vehicle</span>'+sel('jd-asset',[['','Choose one']].concat(assets.map(a=>[a.uuid,a.num+' · '+a.name])),j.assetId)+'</label>'+
+    '<label class="f"><span>Date</span><input type="date" id="jd-date" value="'+esc(j.date)+'"></label>'+
+    '<label class="f"><span>Kind of work</span>'+sel('jd-type',[['Service','Service'],['Repair','Repair'],['Inspection','Inspection'],['Statutory','Statutory'],['Modification','Modification'],['Other','Other']].map(x=>x),j.type)+'</label>'+
+    '<label class="f"><span>Carried out by</span><input type="text" id="jd-by" value="'+esc(j.by)+'"></label>'+
+    '</div>'+
+    '<label class="f"><span>What the job is</span><input type="text" id="jd-title" value="'+esc(j.title)+'" placeholder="e.g. Winter major service, or gearbox oil leak"></label>'+
+    '<label class="f"><span>Work carried out</span><textarea id="jd-work" placeholder="What was actually done">'+esc(j.work)+'</textarea></label>'+
+    '<div class="hr"></div><h3>Faults and their remedies</h3>'+
+    '<div id="jd-faults"></div><button class="btn sm" data-addfault="1">Add a fault</button>'+
+    '<div class="hr"></div><h3>Parts used</h3>'+
+    '<div id="jd-parts"></div><button class="btn sm" data-addpart="1">Add a part</button>'+
+    '<div class="hr"></div><div class="grid2">'+
+    '<label class="f"><span>Labour hours</span><input type="number" step="0.25" id="jd-hours" value="'+esc(j.hours)+'"></label>'+
+    '<label class="f"><span>Labour cost (£)</span><input type="number" step="0.01" id="jd-labour" value="'+esc(j.labourCost)+'"></label>'+
+    '</div>'+
+    '<label class="f"><span>Notes</span><textarea id="jd-notes">'+esc(j.notes)+'</textarea></label>'+
+    '<label class="f"><span>Status</span>'+sel('jd-status',[['open','Open — still outstanding'],['closed','Closed — finished and signed off']],j.status||'open')+'</label>';
+  modal(j._new?'New job card':'Job card '+j.ref, body,
+    (j._new?'':'<button class="btn danger" data-deljob="'+j.uuid+'">Delete</button>')+
+    '<button class="btn" data-close-modal="1">Cancel</button>'+
+    (j._new?'':'<button class="btn" onclick="window.print()">Print</button>')+
+    '<button class="btn go" id="jd-save">Save job card</button>');
+  paintFaults(); paintParts();
+  $('#jd-save').onclick=saveJob;
+}
+function paintFaults(){
+  const el=$('#jd-faults'); if(!el) return;
+  el.innerHTML = JOB_EDIT.faults.length ? JOB_EDIT.faults.map((f,i)=>
+    '<div class="repeat"><div class="grid2">'+
+    '<label class="f"><span>Fault requiring remedy</span><input type="text" data-fx="'+i+'|fault" value="'+esc(f.fault)+'"></label>'+
+    '<label class="f"><span>Details of the remedy</span><input type="text" data-fx="'+i+'|remedy" value="'+esc(f.remedy)+'"></label>'+
+    '</div><div class="btnrow"><button class="btn sm" data-rmfault="'+i+'">Remove</button></div></div>').join('')
+    : '<p class="small muted">No faults recorded against this card.</p>';
+}
+function paintParts(){
+  const el=$('#jd-parts'); if(!el) return;
+  const total=JOB_EDIT.parts.reduce((s,p)=>s+(Number(p.cost)||0)*(Number(p.qty)||0),0);
+  el.innerHTML = (JOB_EDIT.parts.length ? JOB_EDIT.parts.map((p,i)=>
+    '<div class="repeat"><div class="grid2">'+
+    '<label class="f"><span>Part</span><input type="text" data-px="'+i+'|desc" value="'+esc(p.desc)+'" placeholder="e.g. Engine oil filter"></label>'+
+    '<label class="f"><span>Part number</span><input type="text" data-px="'+i+'|partNo" value="'+esc(p.partNo)+'"></label>'+
+    '<label class="f"><span>Quantity</span><input type="number" step="0.01" data-px="'+i+'|qty" value="'+esc(p.qty)+'"></label>'+
+    '<label class="f"><span>Unit cost (£)</span><input type="number" step="0.01" data-px="'+i+'|cost" value="'+esc(p.cost)+'"></label>'+
+    '<label class="f"><span>Supplier</span><input type="text" data-px="'+i+'|supplier" value="'+esc(p.supplier)+'"></label>'+
+    '</div><div class="btnrow"><button class="btn sm" data-rmpart="'+i+'">Remove</button></div></div>').join('')
+    : '<p class="small muted">No parts recorded against this card.</p>')+
+    (total?'<p class="small"><b>Parts total '+money(total)+'</b></p>':'');
+}
+function readJobForm(){
+  const j=JOB_EDIT;
+  j.assetId=$('#jd-asset').value; j.date=$('#jd-date').value||todayISO(); j.type=$('#jd-type').value;
+  j.by=$('#jd-by').value.trim(); j.title=$('#jd-title').value.trim(); j.work=$('#jd-work').value.trim();
+  j.hours=$('#jd-hours').value; j.labourCost=$('#jd-labour').value; j.notes=$('#jd-notes').value.trim();
+  j.status=$('#jd-status').value;
+}
+function saveJob(){
+  readJobForm();
+  if(!JOB_EDIT.assetId){ toast('Choose which machine the job is for'); return; }
+  if(!JOB_EDIT.title){ toast('Give the job a title'); return; }
+  const rec=touch(Object.assign({},JOB_EDIT)); delete rec._new;
+  const i=DB.jobs.findIndex(x=>x.uuid===rec.uuid);
+  if(i>=0) DB.jobs[i]=rec; else DB.jobs.push(rec);
+  persist(); closeModal(); render(); toast('Job card '+rec.ref+' saved');
+}
+
+/* -------------------------------- DEFECTS ------------------------------- */
+let DEF_F={status:'open',asset:''};
+function viewDefects(){
+  let list=sortBy(live(DB.defects),d=>d.date).reverse();
+  if(DEF_F.status==='open') list=list.filter(d=>d.status==='open'||d.status==='progress');
+  else if(DEF_F.status) list=list.filter(d=>d.status===DEF_F.status);
+  if(DEF_F.asset) list=list.filter(d=>d.assetId===DEF_F.asset);
+  const assets=sortBy(live(DB.assets),a=>a.num);
+  const filters='<div class="filters">'+
+    sel('d-status',[['open','Outstanding'],['','Every defect'],['rectified','Rectified'],['deferred','Deferred']],DEF_F.status)+
+    sel('d-asset',[['','Every asset']].concat(assets.map(a=>[a.uuid,a.num+' · '+a.name])),DEF_F.asset)+
+    '<button class="btn sm go" data-newdef="1">Raise a defect</button><button class="btn sm" data-print="1">Print</button></div>';
+  const sev={grounded:'<span class="chip red">Unusable</span>',normal:'<span class="chip amber">Rectify</span>',monitor:'<span class="chip blue">Monitor</span>'};
+  const table=list.length? '<div class="tablewrap"><table><thead><tr>'+
+    '<th>Ref</th><th style="min-width:170px">Machine</th><th>Raised</th>'+
+    '<th style="min-width:230px">Fault requiring remedy</th><th style="min-width:250px">Details of the remedy</th>'+
+    '<th style="min-width:180px">Parts used</th><th>Status</th><th></th></tr></thead><tbody>'+
+    list.map(d=>{ const a=assetById(d.assetId);
+      return '<tr class="clickable" data-def="'+d.uuid+'">'+
+      '<td class="mono nowrap">'+esc(d.ref)+'<div>'+(sev[d.severity]||'')+'</div></td>'+
+      '<td>'+assetLine(a,'sm')+'</td>'+
+      '<td class="mono nowrap">'+fmtDate(d.date)+'<div class="small muted">'+esc(d.raisedBy||'')+'</div></td>'+
+      '<td>'+esc(d.fault)+(d.item&&d.item!==d.fault?'<div class="small muted">'+esc(d.item)+' · '+esc(d.source||'')+'</div>':'')+'</td>'+
+      '<td>'+(d.remedy?esc(d.remedy)+'<div class="small muted">'+esc(d.rectifiedBy||'')+(d.rectifiedDate?' · '+fmtDate(d.rectifiedDate):'')+'</div>':'<span class="chip amber">Awaiting remedy</span>')+'</td>'+
+      '<td>'+((d.parts||[]).length?'<ul class="reqlist">'+d.parts.map(p=>'<li>'+esc(p.qty||1)+' × '+esc(p.desc)+'</li>').join('')+'</ul>':'<span class="muted">—</span>')+'</td>'+
+      '<td>'+({open:'<span class="chip red">Open</span>',progress:'<span class="chip amber">In hand</span>',
+               rectified:'<span class="chip green">Rectified</span>',deferred:'<span class="chip grey">Deferred</span>'}[d.status]||'')+'</td>'+
+      '<td><button class="btn sm" data-def="'+d.uuid+'">Open</button></td></tr>'; }).join('')+'</tbody></table></div>'
+    : '<div class="empty"><b>Nothing outstanding</b>Defects raised on a daily inspection land here for someone to pick up.</div>';
+  return filters+'<div class="panel"><div class="body flush">'+table+'</div></div>';
+}
+let DEF_EDIT=null;
+function newDefect(assetId){
+  DEF_EDIT={uuid:uid(), ref:nextRef('DEF-',DB.defects,'ref'), assetId:assetId||'', date:todayISO(), raisedBy:'',
+    source:'Reported', item:'', fault:'', severity:'normal', status:'open', remedy:'', rectifiedBy:'',
+    rectifiedDate:'', jobId:'', parts:[], _new:true};
+  defectDialog();
+}
+function editDefect(id){ const d=byId(DB.defects,id); if(!d) return; DEF_EDIT=JSON.parse(JSON.stringify(d)); DEF_EDIT._new=false; defectDialog(); }
+function defectDialog(){
+  const d=DEF_EDIT, assets=sortBy(live(DB.assets),a=>a.num);
+  const body='<div class="grid2">'+
+    '<label class="f"><span>Machine or vehicle</span>'+sel('dd-asset',[['','Choose one']].concat(assets.map(a=>[a.uuid,a.num+' · '+a.name])),d.assetId)+'</label>'+
+    '<label class="f"><span>Date raised</span><input type="date" id="dd-date" value="'+esc(d.date)+'"></label>'+
+    '<label class="f"><span>Raised by</span><input type="text" id="dd-by" value="'+esc(d.raisedBy)+'"></label>'+
+    '<label class="f"><span>How serious</span>'+sel('dd-sev',[['grounded','Machine unusable until fixed'],['normal','Needs a remedy'],['monitor','Keep an eye on it']],d.severity)+'</label>'+
+    '</div>'+
+    '<label class="f"><span>Fault requiring remedy</span><textarea id="dd-fault" placeholder="What is wrong">'+esc(d.fault)+'</textarea></label>'+
+    '<div class="hr"></div>'+
+    '<label class="f"><span>Details of the remedy</span><textarea id="dd-remedy" placeholder="What was done to put it right">'+esc(d.remedy)+'</textarea></label>'+
+    '<div class="grid2">'+
+    '<label class="f"><span>Rectified by</span><input type="text" id="dd-rby" value="'+esc(d.rectifiedBy)+'"></label>'+
+    '<label class="f"><span>Date rectified</span><input type="date" id="dd-rdate" value="'+esc(d.rectifiedDate)+'"></label>'+
+    '</div>'+
+    '<h3>Parts used</h3><div id="dd-parts"></div><button class="btn sm" data-adddpart="1">Add a part</button>'+
+    '<div class="hr"></div>'+
+    '<label class="f"><span>Status</span>'+sel('dd-status',[['open','Open'],['progress','In hand'],['rectified','Rectified'],['deferred','Deferred until the winter']],d.status)+'</label>';
+  modal(d._new?'Raise a defect':'Defect '+d.ref, body,
+    (d._new?'':'<button class="btn danger" data-deldef="'+d.uuid+'">Delete</button>')+
+    '<button class="btn" data-close-modal="1">Cancel</button>'+
+    (d._new?'':'<button class="btn" data-defjob="'+d.uuid+'">Make a job card</button>')+
+    '<button class="btn go" id="dd-save">Save defect</button>');
+  paintDefParts();
+  $('#dd-save').onclick=saveDefect;
+}
+function paintDefParts(){
+  const el=$('#dd-parts'); if(!el) return;
+  el.innerHTML=DEF_EDIT.parts.length? DEF_EDIT.parts.map((p,i)=>
+    '<div class="repeat"><div class="grid2">'+
+    '<label class="f"><span>Part</span><input type="text" data-dpx="'+i+'|desc" value="'+esc(p.desc)+'"></label>'+
+    '<label class="f"><span>Part number</span><input type="text" data-dpx="'+i+'|partNo" value="'+esc(p.partNo)+'"></label>'+
+    '<label class="f"><span>Quantity</span><input type="number" step="0.01" data-dpx="'+i+'|qty" value="'+esc(p.qty)+'"></label>'+
+    '<label class="f"><span>Unit cost (£)</span><input type="number" step="0.01" data-dpx="'+i+'|cost" value="'+esc(p.cost)+'"></label>'+
+    '</div><div class="btnrow"><button class="btn sm" data-rmdpart="'+i+'">Remove</button></div></div>').join('')
+    :'<p class="small muted">No parts recorded yet.</p>';
+}
+function saveDefect(){
+  const d=DEF_EDIT;
+  d.assetId=$('#dd-asset').value; d.date=$('#dd-date').value||todayISO(); d.raisedBy=$('#dd-by').value.trim();
+  d.severity=$('#dd-sev').value; d.fault=$('#dd-fault').value.trim(); d.remedy=$('#dd-remedy').value.trim();
+  d.rectifiedBy=$('#dd-rby').value.trim(); d.rectifiedDate=$('#dd-rdate').value; d.status=$('#dd-status').value;
+  if(!d.assetId){ toast('Choose which machine the defect is on'); return; }
+  if(!d.fault){ toast('Describe the fault'); return; }
+  if(d.status==='rectified' && !d.remedy){ toast('Record what was done to put it right'); return; }
+  if(d.status==='rectified' && !d.rectifiedDate) d.rectifiedDate=todayISO();
+  const rec=touch(Object.assign({},d)); delete rec._new;
+  const i=DB.defects.findIndex(x=>x.uuid===rec.uuid);
+  if(i>=0) DB.defects[i]=rec; else DB.defects.push(rec);
+  const a=assetById(rec.assetId);
+  if(a){
+    if(rec.severity==='grounded' && rec.status!=='rectified'){ a.unserviceable=true; touch(a); }
+    if(rec.status==='rectified'){
+      const stillBad=live(DB.defects).some(x=>x.assetId===a.uuid && x.severity==='grounded' && x.status!=='rectified');
+      if(!stillBad && a.unserviceable){ a.unserviceable=false; touch(a); }
+    }
+  }
+  persist(); closeModal(); render(); toast('Defect '+rec.ref+' saved');
+}
+
+/* -------------------------------- PARTS --------------------------------- */
+function allParts(){
+  const out=[];
+  live(DB.jobs).forEach(j=>(j.parts||[]).forEach(p=>out.push(Object.assign({},p,{date:j.date,assetId:j.assetId,src:j.ref,srcType:'Job card',srcId:j.uuid,job:j.title}))));
+  live(DB.defects).forEach(d=>(d.parts||[]).forEach(p=>out.push(Object.assign({},p,{date:d.rectifiedDate||d.date,assetId:d.assetId,src:d.ref,srcType:'Defect',srcId:d.uuid,job:d.fault}))));
+  return sortBy(out,p=>p.date).reverse();
+}
+let PARTS_F={asset:'',q:'',year:''};
+function viewParts(){
+  let list=allParts();
+  if(PARTS_F.asset) list=list.filter(p=>p.assetId===PARTS_F.asset);
+  if(PARTS_F.year) list=list.filter(p=>String(p.date||'').slice(0,4)===PARTS_F.year);
+  if(PARTS_F.q){ const q=PARTS_F.q.toLowerCase(); list=list.filter(p=>((p.desc||'')+' '+(p.partNo||'')+' '+(p.supplier||'')).toLowerCase().indexOf(q)>=0); }
+  const years=Array.from(new Set(allParts().map(p=>String(p.date||'').slice(0,4)).filter(Boolean))).sort().reverse();
+  const assets=sortBy(live(DB.assets),a=>a.num);
+  const total=list.reduce((s,p)=>s+(Number(p.cost)||0)*(Number(p.qty)||0),0);
+  const filters='<div class="filters">'+
+    '<input type="text" id="p-q" placeholder="Search parts" value="'+esc(PARTS_F.q)+'">'+
+    sel('p-asset',[['','Every asset']].concat(assets.map(a=>[a.uuid,a.num+' · '+a.name])),PARTS_F.asset)+
+    sel('p-year',[['','Every year']].concat(years.map(y=>[y,y])),PARTS_F.year)+
+    '<button class="btn sm" data-csv="parts">Export CSV</button><button class="btn sm" data-print="1">Print</button></div>';
+  const table=list.length? '<div class="tablewrap"><table><thead><tr><th>Date</th><th>Machine</th><th>Part</th><th>Part number</th>'+
+    '<th>Qty</th><th>Unit</th><th>Line total</th><th>Supplier</th><th>Against</th></tr></thead><tbody>'+
+    list.map(p=>{ const a=assetById(p.assetId);
+      return '<tr><td class="mono nowrap">'+fmtDate(p.date)+'</td><td>'+assetLine(a,'sm')+'</td><td>'+esc(p.desc)+
+      '<div class="small muted">'+esc(p.job||'')+'</div></td><td class="mono">'+esc(p.partNo||'—')+'</td>'+
+      '<td class="mono">'+esc(p.qty||1)+'</td><td class="mono">'+money(p.cost)+'</td>'+
+      '<td class="mono">'+money((Number(p.cost)||0)*(Number(p.qty)||0))+'</td><td>'+esc(p.supplier||'—')+'</td>'+
+      '<td class="mono nowrap">'+esc(p.srcType)+' '+esc(p.src)+'</td></tr>'; }).join('')+
+    '</tbody></table></div>' : '<div class="empty"><b>No parts recorded</b>Parts added to a job card or a defect are gathered here.</div>';
+  const bySpend={};
+  list.forEach(p=>{ const k=p.assetId; bySpend[k]=(bySpend[k]||0)+(Number(p.cost)||0)*(Number(p.qty)||0); });
+  const spendRows=Object.keys(bySpend).map(k=>[assetById(k),bySpend[k]]).filter(x=>x[0]).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const spend=spendRows.length?'<div class="panel"><header><h2>Where the money went</h2><div class="spacer"></div>'+
+    '<span class="mono">'+money(total)+' total</span></header><div class="body flush"><div class="tablewrap"><table><tbody>'+
+    spendRows.map(([a,v])=>'<tr><td>'+assetLine(a,'sm')+'</td><td class="mono nowrap" style="text-align:right">'+money(v)+'</td></tr>').join('')+
+    '</tbody></table></div></div></div>':'';
+  return filters+'<p class="small muted">'+list.length+' line'+(list.length===1?'':'s')+' · '+money(total)+'</p>'+
+    '<div class="panel"><div class="body flush">'+table+'</div></div>'+spend;
+}
+
+/* ------------------------------- ASSETS --------------------------------- */
+function viewAssets(){
+  const grp=(cat,title)=>{
+    const list=sortBy(live(DB.assets).filter(a=>a.category===cat),a=>a.num);
+    if(!list.length) return '';
+    return '<div class="panel"><header><h2>'+title+'</h2><div class="spacer"></div><span class="small muted">'+list.length+' on the register</span></header>'+
+      '<div class="body flush"><div class="tablewrap"><table><thead><tr><th>No.</th><th style="min-width:160px">Name</th><th>Type</th>'+
+      '<th>Registration</th><th>Reading</th><th>Next due</th><th>Open defects</th><th>Status</th><th></th></tr></thead><tbody>'+
+      list.map(a=>{
+        const sch=scheduleFor(a).filter(r=>r.status!=='ok');
+        const nxt=sch[0];
+        const defs=openDefects(a.uuid).length;
+        return '<tr class="clickable" data-asset="'+a.uuid+'">'+
+        '<td>'+plateHTML(a)+'</td><td><b>'+esc(a.name)+'</b>'+(a.make||a.model?'<div class="small muted">'+esc([a.make,a.model].filter(Boolean).join(' '))+'</div>':'')+'</td>'+
+        '<td>'+esc(TYPE_LABEL[a.type]||a.type)+'</td><td class="mono">'+esc(a.reg||'—')+'</td>'+
+        '<td class="mono nowrap">'+((a.trackMileage||a.trackMeter)&&a.meterValue!=null? a.meterValue+' '+(a.trackMileage?'mi':'hrs') : '<span class="muted">not recorded</span>')+'</td>'+
+        '<td>'+(nxt? '<b>'+esc(nxt.task.name)+'</b><div class="small muted">'+(nxt.due?fmtDate(nxt.due):'no record')+'</div>' : '<span class="chip green">All in date</span>')+'</td>'+
+        '<td>'+(defs?'<span class="chip red">'+defs+'</span>':'<span class="chip green">None</span>')+'</td>'+
+        '<td>'+(a.unserviceable?'<span class="chip red">Unserviceable</span>':a.status==='retired'?'<span class="chip grey">Retired</span>':'<span class="chip green">In service</span>')+'</td>'+
+        '<td><button class="btn sm" data-asset="'+a.uuid+'">Open</button></td></tr>'; }).join('')+
+      '</tbody></table></div></div></div>'; };
+  return '<div class="filters"><button class="btn sm go" data-newasset="1">Add an asset</button>'+
+    '<button class="btn sm" data-csv="assets">Export CSV</button><button class="btn sm" data-print="1">Print</button></div>'+
+    grp('vehicle','Vehicles')+grp('machinery','Machinery');
+}
+function assetDetail(id){
+  const a=assetById(id); if(!a) return;
+  const sch=scheduleFor(a);
+  const defs=live(DB.defects).filter(d=>d.assetId===a.uuid).slice().reverse();
+  const jobs=sortBy(live(DB.jobs).filter(j=>j.assetId===a.uuid),j=>j.date).reverse().slice(0,10);
+  const body='<div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">'+plateHTML(a,'lg')+
+    '<div><h2>'+esc(a.name)+'</h2><div class="small muted">'+esc(TYPE_LABEL[a.type]||a.type)+' · '+(a.category==='vehicle'?'Vehicle':'Machinery')+
+    (a.reg?' · '+esc(a.reg):'')+'</div></div></div>'+
+    (a.unserviceable?'<div class="banner red">Marked unserviceable. Not to be used until the defect is cleared.</div>':'')+
+    '<div class="btnrow" style="margin-bottom:12px">'+
+      '<button class="btn go" data-startdi="'+a.uuid+'">Daily inspection</button>'+
+      '<button class="btn" data-startmonthly="'+a.uuid+'">Monthly visual check</button>'+
+      '<button class="btn" data-newdef-for="'+a.uuid+'">Raise a defect</button>'+
+      '<button class="btn" data-newjob-for="'+a.uuid+'">New job card</button>'+
+      '<button class="btn" data-editasset="'+a.uuid+'">Edit details</button></div>'+
+    '<h3>Maintenance schedule</h3>'+
+    '<div class="tablewrap"><table><thead><tr><th>Service</th><th>What it involves</th><th>Last</th><th>Due</th><th>Status</th><th></th></tr></thead><tbody>'+
+    sch.map(r=>'<tr><td><b>'+esc(r.task.name)+'</b><div class="small muted">every '+r.months+' month'+(r.months===1?'':'s')+'</div></td>'+
+      '<td>'+reqCell(r.task)+'</td><td class="mono nowrap">'+(r.lastDate?fmtDate(r.lastDate):'—')+'</td>'+
+      '<td class="mono nowrap">'+(r.due?fmtDate(r.due):'—')+'</td><td>'+statusChip(r.status,r.blocked)+'</td>'+
+      '<td><button class="btn sm" data-complete="'+a.uuid+'|'+r.task.uuid+'">Record</button></td></tr>').join('')+
+    '</tbody></table></div>'+
+    '<div class="hr"></div><h3>Defects</h3>'+
+    (defs.length?'<div class="tablewrap"><table><thead><tr><th>Ref</th><th>Fault requiring remedy</th><th>Details of the remedy</th><th>Status</th></tr></thead><tbody>'+
+      defs.map(d=>'<tr class="clickable" data-def="'+d.uuid+'"><td class="mono">'+esc(d.ref)+'</td><td>'+esc(d.fault)+'</td>'+
+      '<td>'+(d.remedy?esc(d.remedy):'<span class="muted">—</span>')+'</td><td>'+esc(d.status)+'</td></tr>').join('')+'</tbody></table></div>'
+      :'<p class="small muted">No defects recorded.</p>')+
+    '<div class="hr"></div><h3>Job history</h3>'+
+    (jobs.length?'<div class="tablewrap"><table><thead><tr><th>Card</th><th>Date</th><th>Work</th><th>Parts</th></tr></thead><tbody>'+
+      jobs.map(j=>'<tr class="clickable" data-job="'+j.uuid+'"><td class="mono">'+esc(j.ref)+'</td><td class="mono nowrap">'+fmtDate(j.date)+'</td>'+
+      '<td>'+esc(j.title)+'</td><td>'+((j.parts||[]).length?j.parts.length+' line'+(j.parts.length===1?'':'s'):'—')+'</td></tr>').join('')+'</tbody></table></div>'
+      :'<p class="small muted">No job cards yet.</p>')+
+    (a.notes?'<div class="hr"></div><h3>Notes</h3><p>'+esc(a.notes)+'</p>':'');
+  modal(a.num+' · '+a.name, body, '<button class="btn" data-close-modal="1">Close</button><button class="btn" onclick="window.print()">Print</button>');
+}
+let ASSET_EDIT=null;
+function editAsset(id){
+  const a=id?assetById(id):null;
+  ASSET_EDIT=a?JSON.parse(JSON.stringify(a)):touch({uuid:uid(),num:(Math.max(0,...live(DB.assets).map(x=>+x.num||0))+1),
+    name:'',category:'machinery',type:'other',make:'',model:'',reg:'',serial:'',year:'',trackMileage:false,
+    trackMeter:false,meter:'hours',meterValue:null,inspectionMonths:DB.settings.defaultInspectionMonths,
+    status:'active',unserviceable:false,notes:'',excluded:[],intervals:{}});
+  const e=ASSET_EDIT;
+  const tasks=live(DB.tasks).filter(t=>true);
+  const body='<div class="grid2">'+
+    '<label class="f"><span>Asset number</span><input type="number" id="a-num" value="'+esc(e.num)+'"></label>'+
+    '<label class="f"><span>Name</span><input type="text" id="a-name" value="'+esc(e.name)+'"></label>'+
+    '<label class="f"><span>Vehicle or machinery</span>'+sel('a-cat',[['vehicle','Vehicle'],['machinery','Machinery']],e.category)+'</label>'+
+    '<label class="f"><span>Type</span>'+sel('a-type',Object.keys(TYPE_LABEL).map(k=>[k,TYPE_LABEL[k]]),e.type)+'</label>'+
+    '<label class="f"><span>Make</span><input type="text" id="a-make" value="'+esc(e.make)+'"></label>'+
+    '<label class="f"><span>Model</span><input type="text" id="a-model" value="'+esc(e.model)+'"></label>'+
+    '<label class="f"><span>Registration</span><input type="text" id="a-reg" value="'+esc(e.reg)+'"></label>'+
+    '<label class="f"><span>Serial or VIN</span><input type="text" id="a-serial" value="'+esc(e.serial)+'"></label>'+
+    '<label class="f"><span>Year</span><input type="text" id="a-year" value="'+esc(e.year)+'"></label>'+
+    '<label class="f"><span>Inspection interval (months)</span><input type="number" id="a-insp" value="'+esc(e.inspectionMonths)+'"></label>'+
+    '</div>'+
+    '<div class="checkline"><input type="checkbox" id="a-mile" '+(e.trackMileage?'checked':'')+'><label for="a-mile">Record mileage for this vehicle</label></div>'+
+    '<div class="checkline"><input type="checkbox" id="a-hours" '+(e.trackMeter?'checked':'')+'><label for="a-hours">Record hours run for this machine</label></div>'+
+    '<label class="f"><span>Current reading</span><input type="number" id="a-meterval" value="'+(e.meterValue!=null?esc(e.meterValue):'')+'"></label>'+
+    '<label class="f"><span>Status</span>'+sel('a-status',[['active','In service'],['retired','Retired or sold']],e.status)+'</label>'+
+    '<div class="checkline"><input type="checkbox" id="a-us" '+(e.unserviceable?'checked':'')+'><label for="a-us">Currently unserviceable</label></div>'+
+    '<label class="f"><span>Notes</span><textarea id="a-notes">'+esc(e.notes)+'</textarea></label>'+
+    '<div class="hr"></div><h3>Scheduled work that applies</h3><p class="small muted">Untick anything this asset does not need.</p>'+
+    tasks.map(t=>'<div class="checkline"><input type="checkbox" data-atask="'+t.uuid+'" '+((e.excluded||[]).indexOf(t.uuid)<0?'checked':'')+
+      '><label>'+esc(t.name)+
+      ' <span class="small muted">('+esc(clsLabel(t.cls))+', every '+t.every+' month'+(t.every===1?'':'s')+')</span></label></div>').join('');
+  modal(id?'Edit asset':'Add an asset', body,
+    (id?'<button class="btn danger" data-delasset="'+id+'">Delete</button>':'')+
+    '<button class="btn" data-close-modal="1">Cancel</button><button class="btn go" id="a-save">Save asset</button>');
+  $('#a-save').onclick=()=>{
+    const e2=ASSET_EDIT;
+    e2.num=Number($('#a-num').value)||e2.num; e2.name=$('#a-name').value.trim();
+    e2.category=$('#a-cat').value; e2.type=$('#a-type').value; e2.make=$('#a-make').value.trim();
+    e2.model=$('#a-model').value.trim(); e2.reg=$('#a-reg').value.trim().toUpperCase();
+    e2.serial=$('#a-serial').value.trim(); e2.year=$('#a-year').value.trim();
+    e2.inspectionMonths=Number($('#a-insp').value)||12;
+    e2.trackMileage=$('#a-mile').checked; e2.trackMeter=$('#a-hours').checked;
+    e2.meter=e2.trackMileage?'miles':'hours';
+    e2.meterValue=$('#a-meterval').value===''?null:Number($('#a-meterval').value);
+    e2.status=$('#a-status').value; e2.unserviceable=$('#a-us').checked; e2.notes=$('#a-notes').value.trim();
+    e2.excluded=$$('[data-atask]').filter(x=>!x.checked).map(x=>x.getAttribute('data-atask'));
+    if(!e2.name){ toast('Give the asset a name'); return; }
+    const rec=touch(e2); const i=DB.assets.findIndex(x=>x.uuid===rec.uuid);
+    if(i>=0) DB.assets[i]=rec; else DB.assets.push(rec);
+    persist(); closeModal(); render(); toast('Saved '+rec.num+' '+rec.name);
+  };
+}
+
+/* ------------------------------- SETTINGS -------------------------------- */
+let SET_TAB='general';
+function monthPicker(id,vals){
+  return '<div class="season" style="grid-template-columns:repeat(6,1fr);gap:5px">'+MONTHS.map((m,i)=>
+    '<label class="mo" style="cursor:pointer"><b>'+m+'</b><input type="checkbox" data-'+id+'="'+(i+1)+'" '+
+    ((vals||[]).indexOf(i+1)>=0?'checked':'')+' style="width:20px;height:20px;margin-top:4px"></label>').join('')+'</div>';
+}
+function viewSettings(){
+  const s=DB.settings;
+  const tabs=[['general','General'],['baseline','Baseline dates'],['tasks','Scheduled work'],['sync','Sync'],['data','Data']];
+  const nav='<div class="pillnav">'+tabs.map(t=>'<button data-settab="'+t[0]+'" aria-current="'+(SET_TAB===t[0])+'">'+t[1]+'</button>').join('')+'</div>';
+  let body='';
+  if(SET_TAB==='general'){
+    body='<div class="panel"><header><h2>How the club works</h2></header><div class="body">'+
+      '<div class="grid2">'+
+      '<label class="f"><span>Name shown in the app</span><input type="text" id="s-org" value="'+esc(s.org)+'"></label>'+
+      '<label class="f"><span>Engineer</span><input type="text" id="s-eng" value="'+esc(s.engineer)+'"></label>'+
+      '<label class="f"><span>Default inspection interval (months)</span><input type="number" id="s-insp" value="'+esc(s.defaultInspectionMonths)+'"></label>'+
+      '<label class="f"><span>Warn this many days before a service is due</span><input type="number" id="s-horizon" value="'+esc(s.dueHorizonDays)+'"></label>'+
+      '</div>'+
+      '<div class="hr"></div>'+
+      '<h3>Months when no major servicing is done</h3>'+
+      '<p class="small muted">The flying season. Oil changes and heavy work are held over; inspections, monthly checks and fault rectification carry on.</p>'+
+      monthPicker('blackout',s.majorBlackout)+
+      '<div class="hr"></div>'+
+      '<h3>Months when the engineer is away</h3>'+
+      '<p class="small muted">Nothing routine is planned in these months. Anyone available can still rectify faults.</p>'+
+      monthPicker('leave',s.engineerLeave)+
+      '<div class="btnrow" style="margin-top:14px"><button class="btn go" id="s-save">Save settings</button></div>'+
+      '</div></div>'+
+      '<div class="banner amber">Worth knowing: everything is meant to be serviced in February and March, but '+esc(s.engineer||'the engineer')+
+      ' is away in January and February. As set up here the app plans the winter work into March and April, and into October to December, and it flags anything that lands in a month when nobody is about.</div>';
+  }
+  if(SET_TAB==='baseline'){
+    const assets=sortBy(live(DB.assets),a=>a.num);
+    body='<div class="banner blue">Put in when each job was last done. Everything else — due dates, reminders and the overdue list — is worked out from these.</div>'+
+      '<div class="panel"><div class="body flush"><div class="tablewrap"><table><thead><tr><th>Machine</th>'+
+      live(DB.tasks).map(t=>'<th style="min-width:120px">'+esc(t.name)+'</th>').join('')+'</tr></thead><tbody>'+
+      assets.map(a=>'<tr><td>'+assetLine(a,'sm')+'</td>'+
+        live(DB.tasks).map(t=>{ if(!taskApplies(t,a)) return '<td class="muted small">n/a</td>';
+          const l=lastDoneFor(a.uuid,t.uuid);
+          return '<td><input type="date" data-base="'+a.uuid+'|'+t.uuid+'" value="'+esc(l?l.date:'')+'" style="min-width:140px"></td>'; }).join('')+
+        '</tr>').join('')+'</tbody></table></div></div></div>'+
+      '<div class="btnrow"><button class="btn go" id="s-basesave">Save baseline dates</button></div>';
+  }
+  if(SET_TAB==='tasks'){
+    body='<div class="banner blue">These are the jobs the schedule is built from. Change an interval, the months it may be done in, or what the job involves.</div>'+
+      live(DB.tasks).map(t=>'<div class="panel"><header><h2>'+esc(t.name)+'</h2><div class="spacer"></div>'+
+        '<span class="chip plain">'+esc(clsLabel(t.cls))+'</span></header><div class="body">'+
+        '<div class="grid2"><label class="f"><span>Interval (months)</span><input type="number" data-tint="'+t.uuid+'" value="'+esc(t.every)+'"></label>'+
+        '<label class="f"><span>Applies to</span>'+sel('tap-'+t.uuid,[['all','Everything'],['vehicle','Vehicles only'],['machinery','Machinery only']].concat(
+          Array.isArray(t.applies)?[[t.applies.join(','),t.applies.map(x=>TYPE_LABEL[x]||x).join(', ')]]:[]),
+          Array.isArray(t.applies)?t.applies.join(','):t.applies)+'</label></div>'+
+        '<span class="small muted">Months it may be done in — leave all unticked for any month</span>'+
+        monthPicker('twin-'+t.uuid,t.window)+
+        '<label class="f" style="margin-top:12px"><span>What the job involves, one per line</span>'+
+        '<textarea data-treq="'+t.uuid+'" style="min-height:130px">'+esc((t.req||[]).join('\n'))+'</textarea></label>'+
+        '</div></div>').join('')+
+      '<div class="btnrow"><button class="btn go" id="s-tasksave">Save scheduled work</button></div>';
+  }
+  if(SET_TAB==='sync'){
+    body='<div class="panel"><header><h2>Office and cloud sync</h2></header><div class="body">'+
+      '<p class="small muted">The app works with no connection at all. When it can reach the address below — the office computer on the club Wi-Fi, or the Cloudflare worker directly — it sends up what has changed and pulls down anything new.</p>'+
+      '<label class="f"><span>Sync address</span><input type="text" id="s-url" value="'+esc(s.syncUrl)+'" placeholder="https://fleet-sync.your-club.workers.dev/sync"></label>'+
+      '<label class="f"><span>Shared key</span><input type="password" id="s-key" value="'+esc(s.syncKey)+'" placeholder="The key set on the worker"></label>'+
+      '<label class="f"><span>Site</span><input type="text" id="s-site" value="'+esc(s.siteId)+'"></label>'+
+      '<div class="checkline"><input type="checkbox" id="s-auto" '+(s.autoSync?'checked':'')+'><label for="s-auto">Sync on its own whenever the network comes back</label></div>'+
+      '<div class="btnrow"><button class="btn go" id="s-save2">Save</button><button class="btn primary" data-sync="1">Sync now</button></div>'+
+      '<div class="hr"></div><p class="small"><b>Last sync:</b> '+(s.lastSyncAt?fmtDT(s.lastSyncAt):'never')+
+      '<br><b>Waiting to go up:</b> '+pendingCount()+' record'+(pendingCount()===1?'':'s')+
+      '<br><b>Stored on this device using:</b> '+esc(Store.mode)+'</p>'+
+      '</div></div>'+
+      '<div class="banner blue">Set the address to the office computer (for example http://192.168.1.20:8787/sync) and the office relay passes it on to Cloudflare. Point it straight at the worker instead if the device has its own internet.</div>';
+  }
+  if(SET_TAB==='data'){
+    body='<div class="panel"><header><h2>Backup and restore</h2></header><div class="body">'+
+      '<p class="small muted">Everything lives on this device. Take a copy now and again, and keep it with the club records.</p>'+
+      '<div class="btnrow"><button class="btn" data-export="1">Download a backup</button>'+
+      '<button class="btn" data-import="1">Restore from a backup</button>'+
+      '<button class="btn" data-csv="schedule">Schedule as CSV</button>'+
+      '<button class="btn" data-csv="jobs">Job cards as CSV</button>'+
+      '<button class="btn" data-csv="defects">Defects as CSV</button></div>'+
+      '<div class="hr"></div><h3>Counts</h3><p class="small mono">'+
+      live(DB.assets).length+' assets · '+live(DB.tasks).length+' scheduled jobs · '+live(DB.completions).length+' completions · '+
+      live(DB.jobs).length+' job cards · '+live(DB.defects).length+' defects · '+live(DB.inspections).length+' inspections</p>'+
+      '<div class="hr"></div><h3>Start again</h3>'+
+      '<p class="small muted">Wipes everything on this device and reloads the original equipment list.</p>'+
+      '<div class="btnrow"><button class="btn danger" data-reset="1">Wipe and reload the equipment list</button></div>'+
+      '</div></div>'+
+      '<div class="panel"><header><h2>Install on this device</h2></header><div class="body">'+
+      '<p class="small muted">Serve the folder from the office computer or Cloudflare Pages, then use Install app in the browser menu. On a phone, Add to home screen. Once installed it opens and works with no signal.</p>'+
+      '<div class="btnrow"><button class="btn go" id="s-install">Install app</button>'+
+      '<button class="btn" data-theme="1">Switch light or dark</button></div></div></div>';
+  }
+  return nav+body;
+}
+function pendingCount(){
+  const c=DB.settings.lastCursor||0; let n=0;
+  ['assets','tasks','completions','jobs','defects','inspections'].forEach(k=>{ n+=DB[k].filter(r=>(r.updatedAt||0)>c).length; });
+  return n;
+}
+function saveGeneral(){
+  const s=DB.settings;
+  if($('#s-org')) s.org=$('#s-org').value.trim();
+  if($('#s-eng')) s.engineer=$('#s-eng').value.trim();
+  if($('#s-insp')) s.defaultInspectionMonths=Number($('#s-insp').value)||12;
+  if($('#s-horizon')) s.dueHorizonDays=Number($('#s-horizon').value)||30;
+  if($('[data-blackout]')) s.majorBlackout=$$('[data-blackout]').filter(x=>x.checked).map(x=>+x.getAttribute('data-blackout'));
+  if($('[data-leave]')) s.engineerLeave=$$('[data-leave]').filter(x=>x.checked).map(x=>+x.getAttribute('data-leave'));
+  if($('#s-url')) s.syncUrl=$('#s-url').value.trim();
+  if($('#s-key')) s.syncKey=$('#s-key').value.trim();
+  if($('#s-site')) s.siteId=$('#s-site').value.trim()||'main';
+  if($('#s-auto')) s.autoSync=$('#s-auto').checked;
+  persist(); render(); toast('Settings saved');
+}
+function saveBaselines(){
+  let n=0;
+  $$('[data-base]').forEach(inp=>{
+    const [assetId,taskId]=inp.getAttribute('data-base').split('|');
+    const existing=lastDoneFor(assetId,taskId);
+    const v=inp.value;
+    if(!v){ return; }
+    if(existing && existing.date===v) return;
+    DB.completions.push(touch({uuid:uid(),assetId,taskId,date:v,by:DB.settings.engineer||'',
+      notes:'Baseline date entered in settings',items:[],baseline:true}));
+    n++;
+  });
+  persist(); render(); toast(n?n+' baseline date'+(n===1?'':'s')+' saved':'Nothing changed');
+}
+function saveTasks(){
+  live(DB.tasks).forEach(t=>{
+    const int=$('[data-tint="'+t.uuid+'"]'); if(int) t.every=Number(int.value)||t.every;
+    const ap=$('#tap-'+t.uuid); if(ap){ const v=ap.value; t.applies=(v.indexOf(',')>=0)?v.split(','):(['all','vehicle','machinery'].indexOf(v)>=0?v:v.split(',')); }
+    const win=$$('[data-twin-'+t.uuid+']'); if(win.length) t.window=win.filter(x=>x.checked).map(x=>+x.getAttribute('data-twin-'+t.uuid));
+    const req=$('[data-treq="'+t.uuid+'"]'); if(req) t.req=req.value.split('\n').map(x=>x.trim()).filter(Boolean);
+    touch(t);
+  });
+  persist(); render(); toast('Scheduled work saved');
+}
+
+/* ================================= SYNC ================================== */
+const COLS=['assets','tasks','completions','jobs','defects','inspections'];
+let syncing=false;
+function paintSyncState(){
+  const on=navigator.onLine;
+  const dot=$('#netDot'), txt=$('#netTxt'), st=$('#syncTxt');
+  if(dot) dot.className='dot '+(on?'on':'off');
+  if(txt) txt.textContent=on?'Network available':'Working offline';
+  if(st){ const s=DB.settings; st.textContent = s.lastSyncAt? ('Synced '+fmtDT(s.lastSyncAt)) : (s.syncUrl?'Never synced':'Sync not set up'); }
+  const b=$('#btnSync'); if(b) b.textContent = syncing?'…':((DB.settings.syncUrl&&pendingCount())?'Sync '+pendingCount():'Sync');
+}
+async function syncNow(quiet){
+  const s=DB.settings;
+  if(!s.syncUrl){ if(!quiet){ SET_TAB='sync'; go('settings'); toast('Set the sync address first'); } return; }
+  if(syncing) return;
+  if(!navigator.onLine){ if(!quiet) toast('No network — it will go up on its own later'); return; }
+  syncing=true; paintSyncState();
+  const since=s.lastCursor||0;
+  const changes={}; COLS.forEach(k=>{ changes[k]=DB[k].filter(r=>(r.updatedAt||0)>since); });
+  try{
+    const res=await fetch(s.syncUrl,{ method:'POST', headers:{'Content-Type':'application/json','X-Fleet-Key':s.syncKey||''},
+      body:JSON.stringify({ site:s.siteId||'main', since, changes }) });
+    if(!res.ok) throw new Error('Server said '+res.status);
+    const data=await res.json();
+    let pulled=0;
+    COLS.forEach(k=>{
+      (data.changes&&data.changes[k]||[]).forEach(inc=>{
+        const i=DB[k].findIndex(x=>x.uuid===inc.uuid);
+        if(i<0){ DB[k].push(inc); pulled++; }
+        else if((inc.updatedAt||0)>(DB[k][i].updatedAt||0)){ DB[k][i]=inc; pulled++; }
+      });
+    });
+    s.lastCursor=data.now||now(); s.lastSyncAt=now();
+    persist(); syncing=false; render();
+    toast('Synced — '+Object.keys(changes).reduce((n,k)=>n+changes[k].length,0)+' sent, '+pulled+' received');
+  }catch(err){
+    syncing=false; paintSyncState();
+    if(!quiet) toast('Sync failed: '+err.message);
+    console.warn('sync',err);
+  }
+}
+
+/* ============================ export / import ============================ */
+function download(name,text,type){
+  const b=new Blob([text],{type:type||'application/json'}); const u=URL.createObjectURL(b);
+  const a=document.createElement('a'); a.href=u; a.download=name; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(u); a.remove(); },600);
+}
+function csv(rows){
+  return rows.map(r=>r.map(c=>{ c=(c==null?'':String(c)); return /[",\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c; }).join(',')).join('\r\n');
+}
+function exportCSV(kind){
+  let rows=[], name='export.csv';
+  if(kind==='assets'){ name='assets.csv';
+    rows=[['Number','Name','Category','Type','Make','Model','Registration','Serial','Year','Records mileage','Reading','Inspection months','Status']];
+    sortBy(live(DB.assets),a=>a.num).forEach(a=>rows.push([a.num,a.name,a.category,TYPE_LABEL[a.type]||a.type,a.make,a.model,a.reg,a.serial,a.year,a.trackMileage?'yes':'no',a.meterValue,a.inspectionMonths,a.unserviceable?'unserviceable':a.status]));
+  }
+  if(kind==='schedule'){ name='schedule.csv';
+    rows=[['Number','Machine','Service due','Requirements','Last done','Due','Plan for','Status']];
+    fullSchedule().forEach(r=>rows.push([r.asset.num,r.asset.name,r.task.name,(r.task.req||[]).join('; '),r.lastDate||'',r.due||'',r.planned||'',r.status]));
+  }
+  if(kind==='jobs'){ name='job-cards.csv';
+    rows=[['Card','Date','Number','Machine','Kind','Job','Work carried out','Fault requiring remedy','Remedy','Parts used','Parts cost','Labour cost','By','Status']];
+    sortBy(live(DB.jobs),j=>j.date).forEach(j=>{ const a=assetById(j.assetId)||{};
+      rows.push([j.ref,j.date,a.num,a.name,j.type,j.title,j.work,(j.faults||[]).map(f=>f.fault).join('; '),
+        (j.faults||[]).map(f=>f.remedy).join('; '),(j.parts||[]).map(p=>(p.qty||1)+' x '+p.desc+(p.partNo?' ['+p.partNo+']':'')).join('; '),
+        (j.parts||[]).reduce((s,p)=>s+(Number(p.cost)||0)*(Number(p.qty)||0),0).toFixed(2),Number(j.labourCost||0).toFixed(2),j.by,j.status]); });
+  }
+  if(kind==='defects'){ name='defects.csv';
+    rows=[['Ref','Date','Number','Machine','Item','Fault requiring remedy','Details of the remedy','Parts used','Severity','Status','Raised by','Rectified by','Date rectified']];
+    sortBy(live(DB.defects),d=>d.date).forEach(d=>{ const a=assetById(d.assetId)||{};
+      rows.push([d.ref,d.date,a.num,a.name,d.item,d.fault,d.remedy,(d.parts||[]).map(p=>(p.qty||1)+' x '+p.desc).join('; '),d.severity,d.status,d.raisedBy,d.rectifiedBy,d.rectifiedDate]); });
+  }
+  if(kind==='parts'){ name='parts-used.csv';
+    rows=[['Date','Number','Machine','Part','Part number','Quantity','Unit cost','Line total','Supplier','Against']];
+    allParts().forEach(p=>{ const a=assetById(p.assetId)||{};
+      rows.push([p.date,a.num,a.name,p.desc,p.partNo,p.qty,p.cost,((Number(p.cost)||0)*(Number(p.qty)||0)).toFixed(2),p.supplier,p.srcType+' '+p.src]); });
+  }
+  download(name,csv(rows),'text/csv');
+}
+function importBackup(){
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='.json,application/json';
+  inp.onchange=()=>{ const f=inp.files[0]; if(!f) return; const r=new FileReader();
+    r.onload=()=>{ try{
+      const d=JSON.parse(r.result);
+      if(!d.assets) throw new Error('That file is not a fleet backup');
+      if(!confirm('Merge this backup into what is on this device? Newer records win.')) return;
+      COLS.forEach(k=>{ (d[k]||[]).forEach(inc=>{ const i=DB[k].findIndex(x=>x.uuid===inc.uuid);
+        if(i<0) DB[k].push(inc); else if((inc.updatedAt||0)>(DB[k][i].updatedAt||0)) DB[k][i]=inc; }); });
+      if(d.settings) DB.settings=Object.assign({},DB.settings,d.settings);
+      persist(); render(); toast('Backup merged in');
+    }catch(e){ toast('Could not read that file: '+e.message); } };
+    r.readAsText(f); };
+  inp.click();
+}
+
+/* =============================== events ================================== */
+let deferredInstall=null;
+window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); deferredInstall=e; });
+
+document.addEventListener('click',async e=>{
+  const t=e.target.closest('[data-go],[data-sheet],[data-close-sheet],[data-close-modal],[data-complete],[data-di],[data-pick],'+
+    '[data-di-set],[data-di-back],[data-di-allok],[data-job],[data-newjob],[data-addfault],[data-rmfault],[data-addpart],[data-rmpart],'+
+    '[data-deljob],[data-def],[data-newdef],[data-adddpart],[data-rmdpart],[data-deldef],[data-defjob],[data-asset],[data-newasset],'+
+    '[data-editasset],[data-delasset],[data-startdi],[data-startmonthly],[data-newdef-for],[data-newjob-for],[data-settab],[data-sync],'+
+    '[data-export],[data-import],[data-csv],[data-reset],[data-print],[data-theme],#s-save,#s-save2,#s-basesave,#s-tasksave,#di-save,#s-install');
+  if(!t) return;
+  const g=a=>t.getAttribute(a);
+  if(g('data-go')!==null){ const f=t.getAttribute('data-f'); go(g('data-go'),f?{f}:{}); return; }
+  if(g('data-sheet')!==null){ openSheet(); return; }
+  if(g('data-close-sheet')!==null){ closeSheet(); return; }
+  if(g('data-close-modal')!==null){ closeModal(); return; }
+  if(g('data-print')!==null){ window.print(); return; }
+  if(g('data-theme')!==null){ toggleTheme(); return; }
+  if(g('data-complete')!==null){ const [a,tk]=g('data-complete').split('|'); closeModal(); completeDialog(a,tk); return; }
+  if(g('data-di')!==null){ showInspection(g('data-di')); return; }
+  if(g('data-pick')!==null){ startDI(g('data-pick')); return; }
+  if(g('data-di-back')!==null){ DI_STATE=null; go('di',{}); return; }
+  if(g('data-di-allok')!==null){ DI_STATE.items.forEach(i=>{ if(!i.v) i.v='ok'; }); captureDIHeader(); render(); return; }
+  if(g('data-di-set')!==null){ const [i,v]=g('data-di-set').split('|'); captureDIHeader();
+    DI_STATE.items[+i].v = (DI_STATE.items[+i].v===v?'':v); render(); return; }
+  if(t.id==='di-save'){ captureDIHeader(); saveDI(); return; }
+  if(g('data-job')!==null){ closeModal(); editJob(g('data-job')); return; }
+  if(g('data-newjob')!==null){ newJob(''); return; }
+  if(g('data-newjob-for')!==null){ closeModal(); newJob(g('data-newjob-for')); return; }
+  if(g('data-addfault')!==null){ readJobForm(); JOB_EDIT.faults.push({fault:'',remedy:''}); paintFaults(); return; }
+  if(g('data-rmfault')!==null){ readJobForm(); JOB_EDIT.faults.splice(+g('data-rmfault'),1); paintFaults(); return; }
+  if(g('data-addpart')!==null){ readJobForm(); JOB_EDIT.parts.push({desc:'',partNo:'',qty:1,cost:'',supplier:''}); paintParts(); return; }
+  if(g('data-rmpart')!==null){ readJobForm(); JOB_EDIT.parts.splice(+g('data-rmpart'),1); paintParts(); return; }
+  if(g('data-deljob')!==null){ if(confirm('Delete this job card?')){ const j=byId(DB.jobs,g('data-deljob')); if(j){ j.deleted=1; touch(j); }
+      persist(); closeModal(); render(); toast('Job card deleted'); } return; }
+  if(g('data-def')!==null){ closeModal(); editDefect(g('data-def')); return; }
+  if(g('data-newdef')!==null){ newDefect(''); return; }
+  if(g('data-newdef-for')!==null){ closeModal(); newDefect(g('data-newdef-for')); return; }
+  if(g('data-adddpart')!==null){ DEF_EDIT.parts.push({desc:'',partNo:'',qty:1,cost:''}); paintDefParts(); return; }
+  if(g('data-rmdpart')!==null){ DEF_EDIT.parts.splice(+g('data-rmdpart'),1); paintDefParts(); return; }
+  if(g('data-deldef')!==null){ if(confirm('Delete this defect?')){ const d=byId(DB.defects,g('data-deldef')); if(d){ d.deleted=1; touch(d); }
+      persist(); closeModal(); render(); toast('Defect deleted'); } return; }
+  if(g('data-defjob')!==null){ const d=byId(DB.defects,g('data-defjob')); if(!d) return; closeModal();
+    newJob(d.assetId,{type:'Repair',title:d.fault.slice(0,60),faults:[{fault:d.fault,remedy:d.remedy||''}]}); return; }
+  if(g('data-asset')!==null){ assetDetail(g('data-asset')); return; }
+  if(g('data-newasset')!==null){ editAsset(null); return; }
+  if(g('data-editasset')!==null){ closeModal(); editAsset(g('data-editasset')); return; }
+  if(g('data-delasset')!==null){ if(confirm('Remove this asset from the register?')){ const a=assetById(g('data-delasset'));
+      if(a){ a.deleted=1; touch(a); } persist(); closeModal(); render(); toast('Asset removed'); } return; }
+  if(g('data-startdi')!==null){ closeModal(); startDI(g('data-startdi'),'daily'); return; }
+  if(g('data-startmonthly')!==null){ closeModal(); startDI(g('data-startmonthly'),'monthly'); return; }
+  if(g('data-settab')!==null){ SET_TAB=g('data-settab'); render(); return; }
+  if(g('data-sync')!==null){ syncNow(); return; }
+  if(g('data-export')!==null){ download('fleet-backup-'+todayISO()+'.json',JSON.stringify(serialise(),null,1)); return; }
+  if(g('data-import')!==null){ importBackup(); return; }
+  if(g('data-csv')!==null){ exportCSV(g('data-csv')); return; }
+  if(g('data-reset')!==null){ if(confirm('This wipes everything held on this device and puts the original equipment list back. Carry on?')){
+      seed(); persist(); render(); toast('Equipment list reloaded'); } return; }
+  if(t.id==='s-save'||t.id==='s-save2'){ saveGeneral(); return; }
+  if(t.id==='s-basesave'){ saveBaselines(); return; }
+  if(t.id==='s-tasksave'){ saveTasks(); return; }
+  if(t.id==='s-install'){
+    if(deferredInstall){ deferredInstall.prompt(); deferredInstall=null; }
+    else toast('Use your browser menu — Install app, or Add to home screen');
+    return; }
+});
+function captureDIHeader(){
+  if(!DI_STATE) return;
+  if($('#di-by')) DI_STATE.by=$('#di-by').value;
+  if($('#di-date')) DI_STATE.date=$('#di-date').value;
+  if($('#di-meter')) DI_STATE.meter=$('#di-meter').value;
+  if($('#di-gen')) DI_STATE.general=$('#di-gen').value;
+  $$('[data-di-note]').forEach(i=>{ DI_STATE.items[+i.getAttribute('data-di-note')].note=i.value; });
+  $$('[data-di-ground]').forEach(i=>{ DI_STATE.items[+i.getAttribute('data-di-ground')].ground=i.checked; });
+}
+document.addEventListener('input',e=>{
+  const el=e.target, id=el.id||'';
+  if(id==='j-q'){ JOBS_F.q=el.value; const p=el.selectionStart; render(); const n=$('#j-q'); if(n){ n.focus(); n.setSelectionRange(p,p);} return; }
+  if(id==='p-q'){ PARTS_F.q=el.value; const p=el.selectionStart; render(); const n=$('#p-q'); if(n){ n.focus(); n.setSelectionRange(p,p);} return; }
+  if(el.hasAttribute&&el.hasAttribute('data-fx')){ const [i,k]=el.getAttribute('data-fx').split('|'); JOB_EDIT.faults[+i][k]=el.value; return; }
+  if(el.hasAttribute&&el.hasAttribute('data-px')){ const [i,k]=el.getAttribute('data-px').split('|'); JOB_EDIT.parts[+i][k]=el.value; return; }
+  if(el.hasAttribute&&el.hasAttribute('data-dpx')){ const [i,k]=el.getAttribute('data-dpx').split('|'); DEF_EDIT.parts[+i][k]=el.value; return; }
+  if(el.hasAttribute&&el.hasAttribute('data-di-note')){ DI_STATE.items[+el.getAttribute('data-di-note')].note=el.value; return; }
+});
+document.addEventListener('change',e=>{
+  const id=e.target.id||'';
+  const m={'f-status':['SCHED_F','status'],'f-cat':['SCHED_F','cat'],'f-asset':['SCHED_F','asset'],'f-cls':['SCHED_F','cls'],
+           'j-asset':['JOBS_F','asset'],'j-status':['JOBS_F','status'],'d-status':['DEF_F','status'],'d-asset':['DEF_F','asset'],
+           'p-asset':['PARTS_F','asset'],'p-year':['PARTS_F','year']}[id];
+  if(m){ ({SCHED_F,JOBS_F,DEF_F,PARTS_F})[m[0]][m[1]]=e.target.value; render(); return; }
+  if(e.target.hasAttribute&&e.target.hasAttribute('data-di-ground')){ DI_STATE.items[+e.target.getAttribute('data-di-ground')].ground=e.target.checked; }
+});
+window.addEventListener('online',()=>{ paintSyncState(); if(DB.settings.autoSync) syncNow(true); });
+window.addEventListener('offline',paintSyncState);
+$('#btnSync').addEventListener('click',()=>syncNow());
+$('#btnTheme').addEventListener('click',toggleTheme);
+function toggleTheme(){
+  const cur=document.documentElement.getAttribute('data-theme');
+  const nx=cur==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',nx);
+  DB.settings.theme=nx; persist();
+}
+
+/* ================================= boot ================================== */
+async function boot(){
+  await Store.init();
+  const saved=await Store.load();
+  if(saved && saved.assets && saved.assets.length){
+    COLS.forEach(k=>{ DB[k]=saved[k]||[]; });
+    DB.settings=Object.assign({},DEFAULT_SETTINGS,saved.settings||{});
+    DB.meta=saved.meta||DB.meta;
+    /* keep built-in task definitions fresh if new ones are added later */
+    SEED_TASKS.forEach(st=>{ if(!DB.tasks.some(t=>t.uuid===st.id)) DB.tasks.push(touch(Object.assign({uuid:st.id},st,{builtin:true}))); });
+  } else {
+    seed(); await Store.save(serialise());
+  }
+  if(DB.settings.theme) document.documentElement.setAttribute('data-theme',DB.settings.theme);
+  render();
+  if(DB.settings.autoSync && DB.settings.syncUrl && navigator.onLine) setTimeout(()=>syncNow(true),1500);
+  setInterval(()=>{ if(DB.settings.autoSync && DB.settings.syncUrl && navigator.onLine && !syncing) syncNow(true); }, 5*60*1000);
+  if('serviceWorker' in navigator && location.protocol.indexOf('http')===0){
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }
+}
+boot();
+})();
+</script>
+</body>
+</html>
